@@ -186,7 +186,7 @@ ni_detach_request_processing(struct ni_detach_request_Q_msg *g_acptReqInfo)
 	uint8_t direction = 1;
 	uint8_t bearer = 0;
 
-	calculate_mac(g_acptReqInfo->int_key, g_acptReqInfo->dl_count,
+	calculate_aes_mac(g_acptReqInfo->int_key, g_acptReqInfo->dl_count,
 			direction, bearer, &g_acpt_buffer.buf[mac_data_pos],
 			g_acpt_buffer.pos - mac_data_pos,
 			&g_acpt_buffer.buf[mac_data_pos - MAC_SIZE]);
@@ -221,6 +221,7 @@ ni_detach_request_processing(struct ni_detach_request_Q_msg *g_acptReqInfo)
 	send_sctp_msg(g_acptReqInfo->enb_fd, g_acpt_buffer.buf, g_acpt_buffer.pos,1);
 
 	log_msg(LOG_INFO, "NI Detach Request sent to UE.");
+    free(s1apPDU.value.data);
 
 	return SUCCESS;
 }

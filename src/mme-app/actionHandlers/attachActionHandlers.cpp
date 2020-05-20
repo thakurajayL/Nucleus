@@ -367,10 +367,6 @@ ActStatus ActionHandlers::auth_req_to_ue(SM::ControlBlock& cb)
 
 	E_UTRAN_sec_vector *secVect = const_cast<E_UTRAN_sec_vector*>(ue_ctxt->getAiaSecInfo().AiaSecInfo_mp);
 
-	secinfo& secInfo = const_cast<secinfo&>(ue_ctxt->getUeSecInfo().secinfo_m);
-
-	SecUtils::create_integrity_key(secVect->kasme.val, secInfo.int_key);
-
 #ifdef S1AP_ENCODE_NAS
 	memcpy(&(authreq.rand), &(secVect->rand.val), NAS_RAND_SIZE);
 	memcpy(&(authreq.autn), &(secVect->autn.val), NAS_AUTN_SIZE);
@@ -448,29 +444,30 @@ ActStatus ActionHandlers::auth_response_validate(SM::ControlBlock& cb)
 		}
 	}
 	else{
-		log_msg(LOG_INFO,"Auth response validation success. Proceeding to Sec mode Command\n");
-                SM::Event evt(AUTH_RESP_SUCCESS,NULL);
-                controlBlk_p->addEventToProcQ(evt);
+        log_msg(LOG_INFO,"Auth response validation success. Proceeding to Sec mode Command\n");
+        uint64_t xres = 0;
+        memcpy(&xres, 
+               ue_ctxt->getAiaSecInfo().AiaSecInfo_mp->xres.val, sizeof(uint64_t));
+        uint64_t res = 0;
+        memcpy(&res, auth_resp.res.val, sizeof(uint64_t));
+        log_msg(LOG_DEBUG, "Auth response Comparing received result from UE " 
+                " (%lu) with xres (%lu). Length %d", res, 
+                xres, auth_resp.res.len);
 
-	}
-	uint64_t xres = 0;
-    memcpy(&xres, 
-           ue_ctxt->getAiaSecInfo().AiaSecInfo_mp->xres.val, sizeof(uint64_t));
-	uint64_t res = 0;
-    memcpy(&res, auth_resp.res.val, sizeof(uint64_t));
-	log_msg(LOG_DEBUG, "Auth response Comparing received result from UE " 
-                       " (%lu) with xres (%lu). Length %d", res, xres, auth_resp.res.len);
+        if(memcmp((ue_ctxt->getAiaSecInfo().AiaSecInfo_mp->xres.val),
+                  (auth_resp.res.val),
+                  auth_resp.res.len) != 0) {
+            log_msg(LOG_ERROR, "Invalid Auth response Comparing received result "
+                    "from UE (%lu) with xres (%lu). Length %d", 
+                    res, xres, auth_resp.res.len);
+            return ActStatus::HALT;
+        }
 
-	if(memcmp((ue_ctxt->getAiaSecInfo().AiaSecInfo_mp->xres.val),
-		(auth_resp.res.val),
-		auth_resp.res.len) != 0) {
-		log_msg(LOG_ERROR, "Invalid Auth response Comparing received result " 
-                           "from UE (%lu) with xres (%lu). Length %d", 
-							res, xres, auth_resp.res.len);
-		return ActStatus::HALT;
+        ProcedureStats::num_of_processed_auth_response ++;
+        SM::Event evt(AUTH_RESP_SUCCESS,NULL);
+        controlBlk_p->addEventToProcQ(evt);
 	}
 	
-	ProcedureStats::num_of_processed_auth_response ++;
 	log_msg(LOG_DEBUG, "Leaving auth_response_validate \n");
 	
 	return ActStatus::PROCEED;
@@ -1244,7 +1241,7 @@ ActStatus ActionHandlers::process_attach_cmp_from_ue(SM::ControlBlock& cb)
 		return ActStatus::HALT;
 	}
 
-	ue_ctxt->getUeSecInfo().increment_uplink_count();
+	//ue_ctxt->getUeSecInfo().increment_uplink_count();
 
 	ProcedureStats::num_of_processed_attach_cmp_from_ue ++;
 	log_msg(LOG_DEBUG, "Leaving handle_attach_cmp_from_ue \n");
