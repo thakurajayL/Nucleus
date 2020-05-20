@@ -24,6 +24,7 @@
 #include <msgBuffer.h>
 #include <interfaces/mmeIpcInterface.h>
 #include <utils/mmeContextManagerUtils.h>
+#include "mmeNasUtils.h"
 
 using namespace SM;
 using namespace mme;
@@ -48,12 +49,33 @@ ActStatus ActionHandlers::ni_detach_req_to_ue(SM::ControlBlock& cb)
 	ni_detach_req.enb_fd = ue_ctxt->getEnbFd();
 	ni_detach_req.ue_idx = ue_ctxt->getContextID();
 	ni_detach_req.enb_s1ap_ue_id =  ue_ctxt->getS1apEnbUeId();
+#ifdef S1AP_ENCODE_NAS
 	ni_detach_req.detach_type = 00000010;
 	
-	ue_ctxt->setDwnLnkSeqNo(ue_ctxt->getDwnLnkSeqNo()+1);
-	ni_detach_req.dl_seq_no = ue_ctxt->getDwnLnkSeqNo();
+	ni_detach_req.dl_seq_no = ue_ctxt->getUeSecInfo().getDownlinkSeqNo();
+    ni_detach_req.dl_count = ue_ctxt->getUeSecInfo().getDownlinkCount();
+	ue_ctxt->getUeSecInfo().increment_downlink_count();
 	
 	memcpy(&(ni_detach_req.int_key), &(ue_ctxt->getUeSecInfo().secinfo_m.int_key), NAS_INT_KEY_SIZE);
+#else
+	struct Buffer nasBuffer;
+	struct nasPDU nas = {0};
+	nas.header.security_header_type = IntegrityProtectedCiphered;
+	nas.header.proto_discriminator = EPSMobilityManagementMessages;
+	/* placeholder for mac. mac value will be calculated later */
+	uint8_t mac[MAC_SIZE] = {0};
+	memcpy(nas.header.mac, mac, MAC_SIZE);
+
+	nas.header.seq_no = ue_ctxt->getUeSecInfo().getDownlinkSeqNo(); 
+	nas.dl_count = ue_ctxt->getUeSecInfo().getDownlinkCount();	
+	ue_ctxt->getUeSecInfo().increment_downlink_count();
+
+	nas.header.message_type = DetachRequest;
+	nas.header.detach_type = 00000002;
+	MmeNasUtils::encode_nas_msg(&nasBuffer, &nas, ue_ctxt->getUeSecInfo());
+	memcpy(&ni_detach_req.nasMsgBuf[0], &nasBuffer.buf[0], nasBuffer.pos);
+	ni_detach_req.nasMsgSize = nasBuffer.pos;
+#endif
 	
 	/* Send message to S1app in S1q*/
 	cmn::ipc::IpcAddress destAddr;
@@ -80,7 +102,7 @@ ActStatus ActionHandlers::process_detach_accept_from_ue(SM::ControlBlock& cb)
 		return ActStatus::HALT;
 	}
 		
-	ue_ctxt->setUpLnkSeqNo(ue_ctxt->getUpLnkSeqNo()+1);
+	//ue_ctxt->getUeSecInfo().increment_uplink_count();
 	
 	log_msg(LOG_DEBUG, "Leaving process_detach_accept_from_ue \n");
 	ProcedureStats::num_of_detach_accept_from_ue ++;

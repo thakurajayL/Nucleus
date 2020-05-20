@@ -49,6 +49,7 @@ LIBS := -lpthread \
 	-lmonitor_config \
 	-lsecutil
 
+LIBS += -L/usr/local/bin/ -L/usr/local/lib -lcrypto
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
 	-@mkdir -p $(BINDIR)

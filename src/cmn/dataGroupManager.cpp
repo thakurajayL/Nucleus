@@ -56,13 +56,15 @@ namespace DGM
 
 	ControlBlock* DataGroupManager::findControlBlock(uint32_t cbIndex)
 	{
-		if (cbIndex > ControlBlock::controlBlockArrayIdx ||
+    /* ajay merge security conflict */
+    if (cbIndex > ControlBlock::controlBlockArrayIdx ||
                     cbIndex == 0)
                 {
                     return NULL;
                 }
         
                 ControlBlock* cbp = &cbstore_m[cbIndex - 1];
+
 		if (cbp != NULL && cbp->getControlBlockState() != FREE)
 		    return cbp;
 		else

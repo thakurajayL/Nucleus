@@ -67,6 +67,7 @@ parse_s1ap_conf(s1ap_config_t *config)
 	config->mme_plmn_id.idx[1] = mnc_dig1 << 4 | mcc_dig3;
 	config->mme_plmn_id.idx[2] = mnc_dig3 << 4 | mnc_dig2;
 
+
 	uint16_t count=1;
 	while(1) {
 		char name[100] = {'\0'};

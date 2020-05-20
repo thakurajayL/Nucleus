@@ -41,6 +41,7 @@ get_tau_rsp_protoie_value(struct proto_IE *value, struct tauResp_Q_msg *g_tauRes
 	log_msg(LOG_INFO, "mme_ue_s1ap_id %d and enb_ue_s1ap_id %d\n",
 			g_tauRespInfo->ue_idx, g_tauRespInfo->s1ap_enb_ue_id);
 
+#ifdef S1AP_ENCODE_NAS
 	/* TODO: Add enum for security header type */
 	value->data[2].val.nas.header.security_header_type = IntegrityProtectedCiphered;
 	value->data[2].val.nas.header.proto_discriminator = EPSMobilityManagementMessages;
@@ -63,7 +64,8 @@ get_tau_rsp_protoie_value(struct proto_IE *value, struct tauResp_Q_msg *g_tauRes
 	nasIeCnt++;
 	nasIEs[nasIeCnt].pduElement.spare = 0; /* TA updated */
 	nasIeCnt++;
-	nasIEs[nasIeCnt].pduElement.tailist.type = 1;
+
+  nasIEs[nasIeCnt].pduElement.tailist.type = 1;
 	nasIEs[nasIeCnt].pduElement.tailist.num_of_elements = 0;
 
     	/* S1AP TAI mcc 123, mnc 456 : 214365 */
@@ -78,12 +80,8 @@ get_tau_rsp_protoie_value(struct proto_IE *value, struct tauResp_Q_msg *g_tauRes
 static int
 tau_rsp_processing(struct tauResp_Q_msg *g_tauRespInfo)
 {
-
 	struct s1ap_PDU s1apPDU = {0};
-    
-	uint8_t nas_len_pos;
 	uint8_t s1ap_len_pos;
-	uint8_t mac_data_pos;
 	uint8_t datalen;
 	uint8_t u8value;
 	s1ap_config_t *s1ap_cfg = get_s1ap_config();
@@ -144,8 +142,11 @@ tau_rsp_processing(struct tauResp_Q_msg *g_tauRespInfo)
 	  /* Copy length to s1ap length field */
 	  datalen = g_buffer.pos - s1ap_len_pos - 1;
 	  memcpy(g_buffer.buf + s1ap_len_pos, &datalen, sizeof(datalen));
-      return SUCCESS;
-    }
+   	send_sctp_msg(g_tauRespInfo->enb_fd, g_buffer.buf, g_buffer.pos,1);
+    free(s1apPDU.value.data);
+    return E_FAIL;
+  }
+
 	/* Assigning values to s1apPDU */
 	s1apPDU.procedurecode = id_downlinkNASTransport;
 	s1apPDU.criticality = CRITICALITY_IGNORE;
@@ -220,6 +221,10 @@ tau_rsp_processing(struct tauResp_Q_msg *g_tauRespInfo)
 						sizeof(protocolIe_Id));
 	buffer_copy(&g_buffer, &protocolIe_criticality,
 					sizeof(protocolIe_criticality));
+
+#ifdef S1AP_ENCODE_NAS
+	uint8_t mac_data_pos;
+	uint8_t nas_len_pos;
 
 	nas_len_pos = g_buffer.pos;
 	datalen = 0;
@@ -316,7 +321,7 @@ tau_rsp_processing(struct tauResp_Q_msg *g_tauRespInfo)
 	uint8_t direction = 1;
 	uint8_t bearer = 0;
 
-	calculate_mac(g_tauRespInfo->int_key, nas_hdr->seq_no,
+	calculate_aes_mac(g_tauRespInfo->int_key, g_tauRespInfo->dl_count,
 			direction, bearer, &g_buffer.buf[mac_data_pos],
 			g_buffer.pos - mac_data_pos,
 			&g_buffer.buf[mac_data_pos - MAC_SIZE]);
@@ -333,9 +338,21 @@ tau_rsp_processing(struct tauResp_Q_msg *g_tauRespInfo)
 	/* Copy length to s1ap length field */
 	datalen = g_buffer.pos - s1ap_len_pos - 1;
 	memcpy(g_buffer.buf + s1ap_len_pos, &datalen, sizeof(datalen));
+#else
+	log_msg(LOG_INFO, "Received TAU response from mme-app. Nas message %d \n",g_tauRespInfo->nasMsgSize);
+	datalen = g_tauRespInfo->nasMsgSize + 1; 
+
+	buffer_copy(&g_buffer, &datalen,
+						sizeof(datalen));
+
+	buffer_copy(&g_buffer, &g_tauRespInfo->nasMsgSize, sizeof(uint8_t));
+
+	buffer_copy(&g_buffer, &g_tauRespInfo->nasMsgBuf[0], g_tauRespInfo->nasMsgSize);
+#endif
 
    	send_sctp_msg(g_tauRespInfo->enb_fd, g_buffer.buf, g_buffer.pos,1);
 	log_msg(LOG_INFO, "\nTAU RESP received from MME\n");
+    free(s1apPDU.value.data);
 	return SUCCESS;
 }
 

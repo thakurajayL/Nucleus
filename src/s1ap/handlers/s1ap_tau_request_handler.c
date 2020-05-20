@@ -25,8 +25,7 @@ extern ipc_handle ipc_S1ap_Hndl;
 
 int tau_request_handler(struct proto_IE *s1_tau_req_ies, int enb_fd)
 {
-    struct s1_incoming_msg_data_t req =
-    { 0 };
+	s1_incoming_msg_data_t req= {0};
 
     log_msg(LOG_INFO, "S1ap received tau Request:--\n");
 
@@ -60,18 +59,22 @@ int tau_request_handler(struct proto_IE *s1_tau_req_ies, int enb_fd)
                         sizeof(struct CGI));
             }
             break;
+
+#ifdef S1AP_DECODE_NAS
             case S1AP_IE_NAS_PDU:
             {
                 nas_pdu_header *hdr = &s1_tau_req_ies->data[i].val.nas.header;
                 req.msg_data.tauReq_Q_msg_m.seq_num = hdr->seq_no;
             }
             break;
+#endif
             default:
                 // Once MME starts handlign this request we can parse and send the content
                 log_msg(LOG_WARNING, "Unhandled IE In tau request %d",
                         s1_tau_req_ies->data[i].IE_type);
         }
     }
+
 
     req.destInstAddr = htonl(mmeAppInstanceNum_c);
     req.srcInstAddr = htonl(s1apAppInstanceNum_c);
