@@ -19,6 +19,11 @@
 #include "S1AP-PDU.h"
 #include "InitiatingMessage.h"
 
+#define NAS_RAND_SIZE 16
+#define NAS_AUTN_SIZE 16
+
+#define TRANS_CONT_SIZE 512
+
 #define AUTH_REQ_NO_OF_IES 3
 #define SEC_MODE_NO_OF_IES 3
 #define ESM_REQ_NO_OF_IES 3
@@ -35,12 +40,108 @@
 
 #define BCD_IMSI_STR_LEN 15
 #define MSISDN_STR_LEN 10
+#define MME_NAME_STR_LEN 30
 
-#define BUFFER_SIZE 255
+//ajay merge - clear the confusion of buffer size
+#define BUFFER_SIZE 1000 /* S1AP packet max size */
 typedef struct Buffer {
-	unsigned char buf[BUFFER_SIZE];
-	unsigned char pos;
+    unsigned char buf[BUFFER_SIZE];
+    unsigned char pos;
 }Buffer;
+
+typedef struct ERABs_Subject_to_Forwarding {
+	uint8_t e_RAB_ID;
+	uint32_t dL_transportLayerAddress;
+	uint32_t dL_gtp_teid;
+} ERABs_Subject_to_Forwarding;
+
+enum s1ap_cn_domain
+{
+    CN_DOMAIN_PS,
+    CN_DOMAIN_CS,
+    CN_DOMAIN_NONE
+};
+
+typedef enum handoverType {
+        IntraLTE,
+        LTEtoUTRAN,
+        LTEtoGERAN,
+        UTRANtoLTE,
+        GERANtoLTE,
+        LTEtoNR,
+        NRtoLTE
+}handoverType;
+
+typedef struct ERAB_admitted{
+        uint8_t e_RAB_ID;
+        uint32_t transportLayerAddress;
+        uint32_t gtp_teid;
+        uint32_t dL_transportLayerAddress;
+        uint32_t dL_gtp_teid;
+
+}ERAB_admitted;
+
+typedef struct targetId{
+        struct ie_global_enb_id global_enb_id;
+        struct TAI selected_tai;
+}targetId;
+
+struct src_target_transparent_container{
+    int count;
+    unsigned char buffer[TRANS_CONT_SIZE];
+};
+
+struct src_target_transparent_containerIE{
+    int size;
+    uint8_t* buffer_p;
+};
+struct count_t{
+        int pdcp_sn;
+        int hfn;
+};
+
+struct receive_status_of_ul_pdcp_sdu{
+    int count;
+    unsigned char buffer[255];
+};
+
+struct enB_status_transfer_transparent_container{
+        unsigned short  eRAB_id;
+        struct count_t ul_count_value;
+        struct count_t dl_count_value;
+        struct receive_status_of_ul_pdcp_sdu receive_status_of_ul_pdcp_sdu;
+};
+
+struct enB_status_transfer_transparent_container_list{
+        int count;
+        struct enB_status_transfer_transparent_container enB_status_transfer_transparent_container[10];
+};
+
+struct security_context{
+        int next_hop_chaining_count ;
+        uint8_t next_hop_nh[32];
+};
+
+struct gummei {
+	struct PLMN plmn_id;
+	uint16_t mme_grp_id;
+	uint8_t mme_code;
+};
+
+struct ERAB_admitted_list{
+        int count ;
+        ERAB_admitted erab_admitted[MAX_ERAB_SIZE];
+};
+
+struct ERABSetupList{
+        int count ;
+        ERABSetup eRABSetup[MAX_ERAB_SIZE];
+};
+
+struct ERABs_Subject_to_Forwarding_List{
+	int count;
+	ERABs_Subject_to_Forwarding eRABs_Subject_to_Forwarding[10];
+};
 
 
 /* Dependencies */
@@ -304,6 +405,7 @@ typedef struct ue_sec_capabilities {
 
 
 #define SECURITY_KEY_SIZE 32
+
 typedef struct proto_IE_data {
 	int 			IE_type;
     union value{
@@ -322,6 +424,12 @@ typedef struct proto_IE_data {
         ERABSetup E_RABToBeSetupItemCtxtSUReq;
         ue_sec_capabilities ue_sec_capab;
         uint8_t sec_key[SECURITY_KEY_SIZE];
+        struct targetId target_id;
+        enum handoverType handoverType;
+        struct src_target_transparent_containerIE srcToTargetTranspContainer;
+        struct src_target_transparent_containerIE targetToSrcTranspContainer;
+    	struct enB_status_transfer_transparent_container_list enB_status_transfer_transparent_containerlist;
+        struct ERAB_admitted_list erab_admittedlist;
     }val;
 }proto_IEs;
 
@@ -335,13 +443,47 @@ struct proto_IE {
     uint8_t     ie_cgi_index;
 };
 
+// refer 36.413 . Section 9.3.6 
+enum protocolie_id {
+	id_MME_UE_S1AP_ID = 0,
+	id_Cause = 2,
+	id_eNB_UE_S1AP_ID = 8,
+	id_ERABToBeSetupListCtxtSUReq = 24,
+	id_NAS_PDU = 26,
+	id_ERABToBeSetupItemCtxtSUReq = 52,
+	id_uEaggregatedMaximumBitrate = 66,
+	id_SecurityKey = 73,
+  id_ueAssociatedLogicalS1Conn = 91,
+  id_ResetType = 92, 
+	id_UE_S1AP_IDs = 99,
+	id_UESecurityCapabilities = 107,
+};
+
+enum criticality{
+	CRITICALITY_REJECT = 0x0,
+	CRITICALITY_IGNORE = 0x40,
+	CRITICALITY_NOTIFY,
+};
+
+
+/* Refer 36.413 section - 9.3.6 */
+enum procedure_code {
+	id_InitialContextSetup = 9,
+	id_downlinkNASTransport = 11,
+    id_reset           = 14,
+	id_errorIndication = 15,
+	id_UEContexRelease = 23,
+};
+
+
 typedef struct s1ap_PDU {
 	unsigned char procedurecode;
 	unsigned char criticality;
 	struct proto_IE value;
 }s1ap_PDU;
 
-struct s1ap_header{
+
+  struct s1ap_header{
 	unsigned short procedure_code;
 	unsigned char criticality;
 };
