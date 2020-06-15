@@ -37,6 +37,7 @@
 #include <utils/mmeContextManagerUtils.h>
 #include <utils/mmeCauseUtils.h>
 #include "gtpCauseTypes.h"
+#include "unistd.h"
 
 using namespace SM;
 using namespace mme;
@@ -1095,6 +1096,33 @@ ActStatus ActionHandlers::check_and_send_emm_info(SM::ControlBlock& cb)
     }
 
     log_msg(LOG_DEBUG, "Leaving check_and_send_emm_info \n");
+//#define MAKE_BREAK
+#ifdef MAKE_BREAK
+    {
+        sleep(200);
+	    struct DS_Q_msg g_ds_msg;
+	    g_ds_msg.msg_type = delete_session_request;
+	    
+	    memset(g_ds_msg.indication, 0, S11_DS_INDICATION_FLAG_SIZE);
+	    g_ds_msg.indication[0] = 8; /* TODO : define macro or enum */
+	    
+	    SessionContext* sessionCtxt = ue_ctxt->getSessionContext();
+	    BearerContext* bearerCtxt = sessionCtxt->getBearerContext();
+	    g_ds_msg.bearer_id = bearerCtxt->getBearerId();
+
+	    memcpy(&(g_ds_msg.s11_sgw_c_fteid), &(sessionCtxt->getS11SgwCtrlFteid().fteid_m), sizeof(struct fteid));
+	    	
+	    /* Send message to S11app in S11q*/
+	    cmn::ipc::IpcAddress destAddr;
+	    destAddr.u32 = TipcServiceInstance::s11AppInstanceNum_c;
+
+	    MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
+	    mmeIpcIf.dispatchIpcMsg((char *) &g_ds_msg, sizeof(g_ds_msg), destAddr);
+	    
+	    log_msg(LOG_DEBUG, "Leaving delete_session_req \n");
+	    ProcedureStats::num_of_del_session_req_sent ++;	
+    }
+#endif
 
     return ActStatus::PROCEED;
 

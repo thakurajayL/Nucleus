@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "log.h"
 #include "err_codes.h"
@@ -86,7 +87,7 @@ delete_session_handler(void *data)
 {
 	log_msg(LOG_INFO, "Delete session handler initialized\n");
 
-        delete_session_processing((struct DS_Q_msg *)data);
+    delete_session_processing((struct DS_Q_msg *)data);
 	return NULL;
 }
 
