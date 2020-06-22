@@ -1097,7 +1097,7 @@ ActStatus ActionHandlers::check_and_send_emm_info(SM::ControlBlock& cb)
     }
 
     log_msg(LOG_DEBUG, "Leaving check_and_send_emm_info \n");
-//#define MAKE_BREAK
+#define MAKE_BREAK
 #ifdef MAKE_BREAK
     {
         sleep(200);
