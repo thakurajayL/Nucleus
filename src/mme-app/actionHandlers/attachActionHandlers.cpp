@@ -174,6 +174,9 @@ ActStatus ActionHandlers::send_air_to_hss(SM::ControlBlock& cb)
 	ue_ctxt->getImsi().getImsiDigits(s6a_req.imsi);
 
 	memcpy(&(s6a_req.tai), &(ue_ctxt->getTai().tai_m), sizeof(struct TAI));
+#ifdef DEBUG_HSS_REJECT
+    s6a_req.tai.plmn_id.idx[0]=43;
+#endif
 
 	s6a_req.ue_idx = ue_ctxt->getContextID();
 	s6a_req.msg_type = auth_info_request;
