@@ -1102,8 +1102,148 @@ ActStatus ActionHandlers::check_and_send_emm_info(SM::ControlBlock& cb)
     log_msg(LOG_DEBUG, "Leaving check_and_send_emm_info \n");
 #define MAKE_BREAK
 #ifdef MAKE_BREAK
+    // send RAB Req to wrong teid 
     {
-        sleep(200);
+        sleep(10);
+        struct RB_Q_msg rb_msg;
+        rb_msg.msg_type = release_bearer_request;
+	    SessionContext* sessionCtxt = ue_ctxt->getSessionContext();
+        BearerContext* bearerCtxt = sessionCtxt->getBearerContext();
+        if (bearerCtxt == NULL)
+        {
+            log_msg(LOG_DEBUG, " send_rel_ab_req_to_sgw: bearer ctxt is NULL \n");
+            return ActStatus::HALT;
+        }
+        rb_msg.ue_idx = ue_ctxt->getContextID();
+        memset(rb_msg.indication, 0 , S11_RB_INDICATION_FLAG_SIZE);
+        rb_msg.bearer_id = bearerCtxt->getBearerId();
+        memcpy(&(rb_msg.s11_sgw_c_fteid), &(sessionCtxt->getS11SgwCtrlFteid()),
+                sizeof(struct fteid));
+        /*Send RAB req to wrong teid */
+        rb_msg.s11_sgw_c_fteid.header.teid_gre = 123; 
+        /* RAB does not need s1u teid */
+        memcpy(&(rb_msg.s1u_enb_fteid), &(bearerCtxt->getS1uEnbUserFteid()),
+                sizeof(struct fteid));
+
+        cmn::ipc::IpcAddress destAddr;
+        destAddr.u32 = TipcServiceInstance::s11AppInstanceNum_c;
+
+        MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
+        mmeIpcIf.dispatchIpcMsg((char *) &rb_msg, sizeof(rb_msg), destAddr);
+
+
+    }
+    {
+        sleep(10);
+        struct MB_Q_msg mb_msg;
+        mb_msg.msg_type = modify_bearer_request;
+        mb_msg.ue_idx = ue_ctxt->getContextID();
+	    SessionContext* sessionCtxt = ue_ctxt->getSessionContext();
+        memset(mb_msg.indication, 0, S11_MB_INDICATION_FLAG_SIZE); /*TODO : future*/
+        BearerContext* bearerCtxt = sessionCtxt->getBearerContext();
+        mb_msg.bearer_id = bearerCtxt->getBearerId();
+
+        memcpy(&(mb_msg.s11_sgw_c_fteid), &(sessionCtxt->getS11SgwCtrlFteid().fteid_m),
+                sizeof(struct fteid));
+
+        mb_msg.s11_sgw_c_fteid.header.teid_gre = 123; 
+        memcpy(&(mb_msg.s1u_enb_fteid), &(bearerCtxt->getS1uEnbUserFteid().fteid_m),
+                sizeof(struct fteid));
+        mb_msg.servingNetworkIePresent = false;
+        mb_msg.userLocationInformationIePresent = false;
+
+        cmn::ipc::IpcAddress destAddr;
+        destAddr.u32 = TipcServiceInstance::s11AppInstanceNum_c;
+
+        MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
+        mmeIpcIf.dispatchIpcMsg((char *) &mb_msg, sizeof(mb_msg), destAddr);
+
+
+    }
+
+    {
+        sleep(10);
+	    struct DS_Q_msg g_ds_msg;
+	    g_ds_msg.msg_type = delete_session_request;
+	    
+	    memset(g_ds_msg.indication, 0, S11_DS_INDICATION_FLAG_SIZE);
+	    g_ds_msg.indication[0] = 8; /* TODO : define macro or enum */
+	    
+	    SessionContext* sessionCtxt = ue_ctxt->getSessionContext();
+	    BearerContext* bearerCtxt = sessionCtxt->getBearerContext();
+	    g_ds_msg.bearer_id = bearerCtxt->getBearerId();
+
+	    memcpy(&(g_ds_msg.s11_sgw_c_fteid), &(sessionCtxt->getS11SgwCtrlFteid().fteid_m), sizeof(struct fteid));
+        g_ds_msg.s11_sgw_c_fteid.header.teid_gre = 123; 
+	    	
+	    /* Send message to S11app in S11q*/
+	    cmn::ipc::IpcAddress destAddr;
+	    destAddr.u32 = TipcServiceInstance::s11AppInstanceNum_c;
+
+	    MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
+	    mmeIpcIf.dispatchIpcMsg((char *) &g_ds_msg, sizeof(g_ds_msg), destAddr);
+	    
+	    log_msg(LOG_DEBUG, "Leaving delete_session_req \n");
+	    ProcedureStats::num_of_del_session_req_sent ++;	
+    }
+
+    {
+        sleep(100);
+        struct RB_Q_msg rb_msg;
+        rb_msg.msg_type = release_bearer_request;
+	    SessionContext* sessionCtxt = ue_ctxt->getSessionContext();
+        BearerContext* bearerCtxt = sessionCtxt->getBearerContext();
+        if (bearerCtxt == NULL)
+        {
+            log_msg(LOG_DEBUG, " send_rel_ab_req_to_sgw: bearer ctxt is NULL \n");
+            return ActStatus::HALT;
+        }
+        rb_msg.ue_idx = ue_ctxt->getContextID();
+        memset(rb_msg.indication, 0 , S11_RB_INDICATION_FLAG_SIZE);
+        rb_msg.bearer_id = bearerCtxt->getBearerId();
+        memcpy(&(rb_msg.s11_sgw_c_fteid), &(sessionCtxt->getS11SgwCtrlFteid()),
+                sizeof(struct fteid));
+        /* RAB does not need s1u teid */
+        memcpy(&(rb_msg.s1u_enb_fteid), &(bearerCtxt->getS1uEnbUserFteid()),
+                sizeof(struct fteid));
+
+        cmn::ipc::IpcAddress destAddr;
+        destAddr.u32 = TipcServiceInstance::s11AppInstanceNum_c;
+
+        MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
+        mmeIpcIf.dispatchIpcMsg((char *) &rb_msg, sizeof(rb_msg), destAddr);
+
+
+    }
+    {
+        sleep(100);
+        struct MB_Q_msg mb_msg;
+        mb_msg.msg_type = modify_bearer_request;
+        mb_msg.ue_idx = ue_ctxt->getContextID();
+	    SessionContext* sessionCtxt = ue_ctxt->getSessionContext();
+        memset(mb_msg.indication, 0, S11_MB_INDICATION_FLAG_SIZE); /*TODO : future*/
+        BearerContext* bearerCtxt = sessionCtxt->getBearerContext();
+        mb_msg.bearer_id = bearerCtxt->getBearerId();
+
+        memcpy(&(mb_msg.s11_sgw_c_fteid), &(sessionCtxt->getS11SgwCtrlFteid().fteid_m),
+                sizeof(struct fteid));
+
+        memcpy(&(mb_msg.s1u_enb_fteid), &(bearerCtxt->getS1uEnbUserFteid().fteid_m),
+                sizeof(struct fteid));
+        mb_msg.servingNetworkIePresent = false;
+        mb_msg.userLocationInformationIePresent = false;
+
+        cmn::ipc::IpcAddress destAddr;
+        destAddr.u32 = TipcServiceInstance::s11AppInstanceNum_c;
+
+        MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
+        mmeIpcIf.dispatchIpcMsg((char *) &mb_msg, sizeof(mb_msg), destAddr);
+
+
+    }
+
+    {
+        sleep(100);
 	    struct DS_Q_msg g_ds_msg;
 	    g_ds_msg.msg_type = delete_session_request;
 	    
