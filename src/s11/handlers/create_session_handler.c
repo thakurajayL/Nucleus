@@ -24,6 +24,7 @@
 #include "gtpv2c_ie.h"
 #include "s11_config.h"
 #include <gtpV2StackWrappers.h>
+#include "gtp_cpp_wrapper.h"
 
 /************************************************************************
 Current file : Stage 5 handler.
@@ -231,6 +232,8 @@ create_session_processing(struct CS_Q_msg * g_csReqInfo)
 
 	log_msg(LOG_INFO, "send %d bytes.\n",MsgBuffer_getBufLen(csReqMsgBuf_p));
 
+    uint32_t seq = g_s11_sequence;
+ 
 	int res = sendto (
 			g_s11_fd,
 			MsgBuffer_getDataPointer(csReqMsgBuf_p),
@@ -241,6 +244,7 @@ create_session_processing(struct CS_Q_msg * g_csReqInfo)
 		log_msg(LOG_ERROR,"Error in sendto in detach stage 3 post to next\n");
 	}
 
+    add_gtp_transaction(seq,g_csReqInfo->ue_idx); 
 	log_msg(LOG_INFO,"%d bytes sent. Err : %d, %s\n",res,errno,
 			strerror(errno));
 

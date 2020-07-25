@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include "msgType.h"
 #include <gtpV2StackWrappers.h>
+#include "gtp_cpp_wrapper.h"
 
 /**Global and externs **/
 extern s11_config_t g_s11_cfg;
@@ -227,6 +228,7 @@ main(int argc, char **argv)
 		init_logging("hostbased","/tmp/s11logs.txt" );
 	}
 
+    init_cpp_gtp_tables();
 
 	init_parser("conf/s11.json");
 	parse_s11_conf();
