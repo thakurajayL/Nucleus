@@ -248,11 +248,14 @@ create_session_handler(void *data)
 {
 	log_msg(LOG_INFO, "Create Session Request handler\n");
 
+#ifdef TEST_LOCAL
     for(int i=0; i<2; i++) {
+#else 
+    for(int i=0; i<1; i++) {
+#endif
         struct CS_Q_msg *data1 = (struct CS_Q_msg *)data;
         data1->ue_idx += i;
 	    create_session_processing((struct CS_Q_msg *) data);
-        sleep(10);
     }
 
 	return NULL;

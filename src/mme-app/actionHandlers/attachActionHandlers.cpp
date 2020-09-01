@@ -1188,7 +1188,7 @@ ActStatus ActionHandlers::check_and_send_emm_info(SM::ControlBlock& cb)
     }
 
     {
-        sleep(100);
+        sleep(10);
         struct RB_Q_msg rb_msg;
         rb_msg.msg_type = release_bearer_request;
 	    SessionContext* sessionCtxt = ue_ctxt->getSessionContext();
@@ -1216,7 +1216,7 @@ ActStatus ActionHandlers::check_and_send_emm_info(SM::ControlBlock& cb)
 
     }
     {
-        sleep(100);
+        sleep(10);
         struct MB_Q_msg mb_msg;
         mb_msg.msg_type = modify_bearer_request;
         mb_msg.ue_idx = ue_ctxt->getContextID();
@@ -1243,7 +1243,7 @@ ActStatus ActionHandlers::check_and_send_emm_info(SM::ControlBlock& cb)
     }
 
     {
-        sleep(100);
+        sleep(10);
 	    struct DS_Q_msg g_ds_msg;
 	    g_ds_msg.msg_type = delete_session_request;
 	    
