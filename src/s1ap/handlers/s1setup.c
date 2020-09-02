@@ -27,7 +27,7 @@
 #include "ProtocolIE-Field.h"
 #include "SupportedTAs-Item.h"
 #include "TAC.h"
-//void ut_ho(void *msg, int enb_fd);
+
 /******************************************************
   S1_SETUP_RESPONSE handling
 ******************************************************/
@@ -128,7 +128,6 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 		{
 			S1SetupRequestIEs_t *ie_p;
 			ie_p = protocolIes->list.array[i];
-			log_msg(LOG_INFO, "s1setup %d \n", ie_p->id);
 			switch(ie_p->id)
 			{
 				case ProtocolIE_ID_id_Global_ENB_ID:
@@ -165,6 +164,7 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 				{
 					ENBname_t *eNbName = &ie_p->value.choice.ENBname;
 					log_msg(LOG_DEBUG, "S1 Setup Message with eNB name %s \n", eNbName->buf);
+                    strcpy(enbStruct.eNbName, eNbName->buf);
 					break;
 				}
 				
@@ -189,9 +189,6 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 							char plmn_s[10] = {'\0'};
 							memcpy(plmn_s, plmn->buf, plmn->size);
 							log_msg(LOG_INFO, "S1setup Supported PLMN %s Plmn buffer size %d \n", plmn_s, plmn->size);
-							char plmn_s1[10] = {'\0'};
-							sprintf(plmn_s1, "%d %d %d ",plmn->buf[0], plmn->buf[1], plmn->buf[2]);
-							log_msg(LOG_INFO, "S1setup Supported PLMN %s \n", plmn_s1);
 							struct PLMN plmn_struct = {0}; 
 							for(int b=0; b< plmn->size; b++) 
 							{
@@ -241,7 +238,7 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 
     if(match_found)
     {
-        log_msg(LOG_DEBUG, "PLMN Match found. Create CB and add Enb Info");
+        log_msg(LOG_DEBUG, "PLMN Match found. Create CB and add Enb Info.\n");
         cbIndex = findControlBlockWithEnbId(enbStruct.enbId_m);
         if(INVALID_CB_INDEX == cbIndex)
         {
@@ -253,12 +250,22 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
                 return E_FAIL;
             }
 
-            setValuesForEnbCtx(cbIndex, &enbStruct);
+            setValuesForEnbCtx(cbIndex, &enbStruct, false);
         }
         else
         {
             log_msg(LOG_DEBUG, "ENB Ctx found for enb id %d. Update values.\n",enbStruct.enbId_m);
-            setValuesForEnbCtx(cbIndex, &enbStruct);
+            cbIndex = setValuesForEnbCtx(cbIndex, &enbStruct, true);
+            if(INVALID_CB_INDEX == cbIndex)
+            {
+                log_msg(LOG_ERROR,"Set values in Enb Ctx failed.\n");
+                struct s1ap_common_req_Q_msg s1ap_setup_failure = {0};
+                s1ap_setup_failure.IE_type = S1AP_SETUP_FAILURE;
+                s1ap_setup_failure.enb_fd = enb_fd;
+                s1ap_setup_failure.cause.present = s1apCause_PR_misc;
+                s1ap_setup_failure.cause.choice.misc = s1apCauseMisc_unknown_PLMN;
+                return s1_setup_failure(&s1ap_setup_failure);
+            }
         }
     }
     else

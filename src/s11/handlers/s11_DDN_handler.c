@@ -1,17 +1,7 @@
 /*
  * Copyright (c) 2019, Infosys Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -22,7 +12,7 @@
 #include <pthread.h>
 
 #include "err_codes.h"
-#include "options.h"
+#include "s11_options.h"
 #include "ipc_api.h"
 #include "s11.h"
 #include "s11_config.h"
@@ -36,14 +26,13 @@ extern struct GtpV2Stack* gtpStack_gp;
 
 
 int
-s11_DDN_handler(MsgBuffer* message, GtpV2MessageHeader* hdr)
+s11_DDN_handler(MsgBuffer* message, GtpV2MessageHeader* hdr, uint32_t sgw_ip)
 {
-
-
 	struct gtp_incoming_msg_data_t ddn_info;
 	ddn_info.msg_type = downlink_data_notification;
 	ddn_info.ue_idx = hdr->teid;
 	ddn_info.msg_data.ddn_Q_msg_m.seq_no = hdr->sequenceNumber;
+	ddn_info.msg_data.ddn_Q_msg_m.sgw_ip = sgw_ip;
 
 
 	DownlinkDataNotificationMsgData msgData;

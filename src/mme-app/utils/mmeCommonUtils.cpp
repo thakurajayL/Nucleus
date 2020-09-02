@@ -1,17 +1,7 @@
 /*
  * Copyright (c) 2019, Infosys Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <utils/mmeCommonUtils.h>
@@ -26,19 +16,51 @@
 
 using namespace mme;
 
-extern mme_config g_mme_cfg;
+extern mme_config_t *mme_cfg;
 
 bool MmeCommonUtils::isLocalGuti(const guti &guti_r)
 {
 	bool rc = false;
 
-	if (guti_r.mme_grp_id == g_mme_cfg.mme_group_id &&
-			guti_r.mme_code == g_mme_cfg.mme_code)
+	if (guti_r.mme_grp_id == mme_cfg->mme_group_id &&
+			guti_r.mme_code == mme_cfg->mme_code)
 	{
 		rc = true;
 	}
 
 	return rc;
+}
+
+uint8_t MmeCommonUtils::select_preferred_int_algo(uint8_t &val)
+{
+	uint8_t result = 0;
+
+	for(int i = 0; i < MAX_ALGO_COUNT; i++)
+    {
+        if (val & (0x80 >> mme_cfg->integrity_alg_order[i]))
+        {
+            result = mme_cfg->integrity_alg_order[i];
+            break;
+        }
+    }
+
+	return result;
+}
+
+uint8_t MmeCommonUtils::select_preferred_sec_algo(uint8_t &val)
+{
+	uint8_t result = 0;
+
+	for(int i = 0; i < MAX_ALGO_COUNT; i++)
+    {
+        if (val & (0x80 >> mme_cfg->ciphering_alg_order[i]))
+        {
+            result = mme_cfg->ciphering_alg_order[i];
+            break;
+        }
+    }
+
+	return result;
 }
 
 uint32_t MmeCommonUtils::allocateMtmsi()
@@ -154,8 +176,28 @@ SM::ControlBlock* MmeCommonUtils::findControlBlock(cmn::utils::MsgBuffer* buf)
 			{
 				log_msg(LOG_INFO, "IMSI attach received.\n");
 
-				cb = SubsDataGroupManager::Instance()->allocateCB();
-				cb->setTempDataBlock(DefaultMmeProcedureCtxt::Instance());
+				uint8_t imsi[BINARY_IMSI_LEN] = {0};
+                memcpy( imsi, ue_info.IMSI, BINARY_IMSI_LEN );
+
+				uint8_t first = imsi[0] >> 4;
+				imsi[0] = (uint8_t)(( first << 4 ) | 0x0f );
+
+				DigitRegister15 IMSIInfo;
+				IMSIInfo.convertFromBcdArray(imsi);
+
+				int cbIndex = SubsDataGroupManager::Instance()->findCBWithimsi(IMSIInfo);
+				if (cbIndex > 0)
+				{
+                    log_msg(LOG_DEBUG, "existing cb for IMSI.\n");
+					cb = SubsDataGroupManager::Instance()->findControlBlock(cbIndex);
+				}
+				
+                if (cb == NULL)
+				{
+                    log_msg(LOG_DEBUG, "create new cb for IMSI.\n");
+					cb = SubsDataGroupManager::Instance()->allocateCB();
+					cb->setTempDataBlock(DefaultMmeProcedureCtxt::Instance());
+				}
 			}
 			else if (UE_ID_GUTI(ue_info.flags))
 			{
@@ -227,17 +269,20 @@ SM::ControlBlock* MmeCommonUtils::findControlBlock(cmn::utils::MsgBuffer* buf)
 		}
 		case tau_request:
 		{
-			if(msgData_p->ue_idx > 0)
-				cb = SubsDataGroupManager::Instance()->findControlBlock(msgData_p->ue_idx);
-			
-			if (cb == NULL)
+			const struct tauReq_Q_msg &tau_Req = (msgData_p->msg_data.tauReq_Q_msg_m);
+			int cbIndex = SubsDataGroupManager::Instance()->findCBWithmTmsi(tau_Req.ue_m_tmsi);
+			if (cbIndex > 0)
 			{
-                            log_msg(LOG_INFO, "Failed to find control block using index %d."
-                                              " Allocate a temporary control block\n", msgData_p->ue_idx);
+				cb = SubsDataGroupManager::Instance()->findControlBlock(cbIndex);
+			}
+			else
+			{
+				log_msg(LOG_INFO, "Failed to find control block using mTmsi %d."
+                                              " Allocate a temporary control block\n", tau_Req.ue_m_tmsi);
 
-                            // Respond  with TAU Reject from default TAU event handler
-			    cb = SubsDataGroupManager::Instance()->allocateCB();
-			    cb->setTempDataBlock(DefaultMmeProcedureCtxt::Instance());
+                            	// Respond  with TAU Reject from default TAU event handler
+                            	cb = SubsDataGroupManager::Instance()->allocateCB();
+                            	cb->setTempDataBlock(DefaultMmeProcedureCtxt::Instance());
 			}
 
 			break;

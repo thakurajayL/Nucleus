@@ -29,8 +29,11 @@ namespace mme
             enbId_m(0),
             s1apEnbUeId_m(0),
             contextID_m(0),
-            tai_m()
-	{	
+            tai_m(),
+            enbnameLen_m(0)
+	{
+		memset(enbname_m,0,sizeof(enbname_m));
+	
 	}
 	
 	/******************************************************************************
@@ -51,10 +54,11 @@ namespace mme
 	/******************************************************************************
 	* returns enbFd
 	******************************************************************************/	
-	int EnbContext::getEnbFd() const
-	{
-		return enbFd_m;
-	}
+        int EnbContext::getEnbFd() const
+        {
+                return enbFd_m;
+        }
+
 	
 	/******************************************************************************
 	* sets enbId
@@ -67,10 +71,11 @@ namespace mme
 	/******************************************************************************
 	* returns enbId
 	******************************************************************************/	
-	int EnbContext::getEnbId() const
-	{
-		return enbId_m;
-	}
+        int EnbContext::getEnbId() const
+        {
+                return enbId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets s1apEnbUeId
@@ -83,10 +88,11 @@ namespace mme
 	/******************************************************************************
 	* returns s1apEnbUeId
 	******************************************************************************/	
-	int EnbContext::getS1apEnbUeId() const
-	{
-		return s1apEnbUeId_m;
-	}
+        int EnbContext::getS1apEnbUeId() const
+        {
+                return s1apEnbUeId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets contextID
@@ -99,10 +105,11 @@ namespace mme
 	/******************************************************************************
 	* returns contextID
 	******************************************************************************/	
-	uint32_t EnbContext::getContextID() const
-	{
-		return contextID_m;
-	}
+        uint32_t EnbContext::getContextID() const
+        {
+                return contextID_m;
+        }
+
 	
 	/******************************************************************************
 	* sets tai
@@ -115,9 +122,35 @@ namespace mme
 	/******************************************************************************
 	* returns tai
 	******************************************************************************/	
-	const TAI& EnbContext::getTai() const
+        const TAI& EnbContext::getTai() const
+        {
+                return tai_m;
+        }
+
+	
+	/******************************************************************************
+	* sets enbname
+	******************************************************************************/
+	void EnbContext::setEnbname( const char* enbname_i,uint16_t len )
 	{
-		return tai_m;
+		enbnameLen_m=len;
+		memcpy(enbname_m, enbname_i, (enbnameLen_m * sizeof(char)));
+	}
+	
+	/******************************************************************************
+	* returns enbname
+	******************************************************************************/	
+        const char* EnbContext::getEnbname() const
+        {
+                return enbname_m;
+        }
+
+	/******************************************************************************
+	* returns enbnameLen
+	******************************************************************************/	
+	uint16_t EnbContext::getEnbnameLen() const
+	{
+		return enbnameLen_m;
 	}
 	
 } // mme

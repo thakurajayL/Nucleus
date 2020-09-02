@@ -29,6 +29,8 @@
 #include <msgBuffer.h>
 #include <interfaces/mmeIpcInterface.h>
 #include <utils/mmeContextManagerUtils.h>
+#include "mmeNasUtils.h"
+#include "mmeStatsPromClient.h"
 
 using namespace SM;
 using namespace mme;
@@ -47,10 +49,11 @@ ActStatus ActionHandlers::del_session_req(SM::ControlBlock& cb)
 		return ActStatus::HALT;
 	}
 		
-	ue_ctxt->setUpLnkSeqNo(ue_ctxt->getUpLnkSeqNo()+1);
+	//ue_ctxt->getUeSecInfo().increment_uplink_count();
 	
 	struct DS_Q_msg g_ds_msg;
 	g_ds_msg.msg_type = delete_session_request;
+	g_ds_msg.ue_idx = ue_ctxt->getContextID();
 	
 	memset(g_ds_msg.indication, 0, S11_DS_INDICATION_FLAG_SIZE);
 	g_ds_msg.indication[0] = 8; /* TODO : define macro or enum */
@@ -65,6 +68,7 @@ ActStatus ActionHandlers::del_session_req(SM::ControlBlock& cb)
 	cmn::ipc::IpcAddress destAddr;
 	destAddr.u32 = TipcServiceInstance::s11AppInstanceNum_c;
 
+    mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_TX_S11_DELETE_SESSION_REQUEST);
 	MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
 	mmeIpcIf.dispatchIpcMsg((char *) &g_ds_msg, sizeof(g_ds_msg), destAddr);
 	
@@ -95,7 +99,8 @@ ActStatus ActionHandlers::purge_req(SM::ControlBlock& cb)
 	cmn::ipc::IpcAddress destAddr;
 	destAddr.u32 = TipcServiceInstance::s6AppInstanceNum_c;
 
-        MmeIpcInterface &mmeIpcIf =static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));	
+    mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_TX_S6A_PURGE_REQUEST);
+    MmeIpcInterface &mmeIpcIf =static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));	
 	mmeIpcIf.dispatchIpcMsg((char *) &purge_msg, sizeof(purge_msg), destAddr);
 	
 	log_msg(LOG_DEBUG, "Leaving purge_req \n");
@@ -170,26 +175,40 @@ ActStatus ActionHandlers::detach_accept_to_ue(SM::ControlBlock& cb)
 		log_msg(LOG_DEBUG, "send_detach_accept: ue context is NULL\n");
 		return ActStatus::HALT;
 	}
-	
+    mmeStats::Instance()->decrement(mmeStatsCounter::MME_NUM_ACTIVE_SUBSCRIBERS);
 	detach_accept_Q_msg detach_accpt;
 	detach_accpt.msg_type = detach_accept;
 	detach_accpt.enb_fd = ue_ctxt->getEnbFd();
 	detach_accpt.ue_idx = ue_ctxt->getContextID();
 	detach_accpt.enb_s1ap_ue_id =  ue_ctxt->getS1apEnbUeId();
 	
-	detach_accpt.dl_seq_no = ue_ctxt->getDwnLnkSeqNo();
-	ue_ctxt->setDwnLnkSeqNo(ue_ctxt->getDwnLnkSeqNo()+1);
-	
-	memcpy(&(detach_accpt.int_key), &(ue_ctxt->getUeSecInfo().secinfo_m.int_key), NAS_INT_KEY_SIZE);
+	struct Buffer nasBuffer;
+	struct nasPDU nas = {0};
+	nas.header.security_header_type = IntegrityProtectedCiphered;
+	nas.header.proto_discriminator = EPSMobilityManagementMessages;
+	uint8_t mac[MAC_SIZE] = {0};
+	memcpy(nas.header.mac, mac, MAC_SIZE);
+	nas.header.seq_no = ue_ctxt->getUeSecInfo().getDownlinkSeqNo(); 
+	nas.dl_count = ue_ctxt->getUeSecInfo().getDownlinkCount();	
+	ue_ctxt->getUeSecInfo().increment_downlink_count();
+
+	nas.header.message_type = DetachAccept;
+	nas.header.nas_security_param = AUTHREQ_NAS_SECURITY_PARAM;
+
+	MmeNasUtils::encode_nas_msg(&nasBuffer, &nas, ue_ctxt->getUeSecInfo());
+	memcpy(&detach_accpt.nasMsgBuf[0], &nasBuffer.buf[0], nasBuffer.pos);
+	detach_accpt.nasMsgSize = nasBuffer.pos;
 	
 	/* Send message to S11app in S11q*/
 	cmn::ipc::IpcAddress destAddr;
 	destAddr.u32 = TipcServiceInstance::s1apAppInstanceNum_c;
 
+    mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_TX_S1AP_DETACH_ACCEPT);
 	MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
 	mmeIpcIf.dispatchIpcMsg((char *) &detach_accpt, sizeof(detach_accpt), destAddr);
 	
 	MmeContextManagerUtils::deallocateProcedureCtxt(cb, detach_c );
+  	mmeStats::Instance()->increment(mmeStatsCounter::MME_PROCEDURES_DETACH_PROC_SUCCESS);
 
 	MmContext* mmCtxt = ue_ctxt->getMmContext();
 	mmCtxt->setMmState( EpsDetached );

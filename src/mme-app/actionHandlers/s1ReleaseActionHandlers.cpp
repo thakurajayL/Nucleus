@@ -34,6 +34,7 @@
 #include <interfaces/mmeIpcInterface.h>
 #include <utils/mmeContextManagerUtils.h>
 #include <utils/mmeCauseUtils.h>
+#include "mmeStatsPromClient.h"
 
 using namespace SM;
 using namespace mme;
@@ -55,7 +56,7 @@ ActStatus ActionHandlers:: send_rel_ab_req_to_sgw(SM::ControlBlock& cb)
 	if (sessionCtxt == NULL)
 	{
 		log_msg(LOG_DEBUG, " send_rel_ab_req_to_sgw: session ctxt is NULL \n");
-		return ActStatus::HALT;
+		return ActStatus::ABORT;
 	}
 
 	BearerContext* bearerCtxt = sessionCtxt->getBearerContext();
@@ -65,19 +66,35 @@ ActStatus ActionHandlers:: send_rel_ab_req_to_sgw(SM::ControlBlock& cb)
 		return ActStatus::HALT;
 	}
 
+    MmeS1RelProcedureCtxt *procCtxt = dynamic_cast<MmeS1RelProcedureCtxt*>(cb.getTempDataBlock());
+    if (procCtxt == NULL)
+    {
+        log_msg(LOG_DEBUG, "S1 Release Proc Ctxt is Null. Abort.\n");
+		return ActStatus::ABORT;
+    }
+
+    if(ue_ctxt->getS1apEnbUeId() != procCtxt->getS1apEnbUeId())
+    {
+        log_msg(LOG_DEBUG, "S1 Release req with wrong enb_s1ap_ue_id.\n");
+		return ActStatus::ABORT;
+    }
+
 	struct RB_Q_msg rb_msg;
 	rb_msg.msg_type = release_bearer_request;
 	rb_msg.ue_idx = ue_ctxt->getContextID();
 	memset(rb_msg.indication, 0 , S11_RB_INDICATION_FLAG_SIZE);
 	rb_msg.bearer_id = bearerCtxt->getBearerId();
-	memcpy(&(rb_msg.s11_sgw_c_fteid), &(sessionCtxt->getS11SgwCtrlFteid()),
-			sizeof(struct fteid));
-	memcpy(&(rb_msg.s1u_enb_fteid), &(bearerCtxt->getS1uEnbUserFteid()),
+	memcpy(&(rb_msg.s11_sgw_c_fteid), 
+           &(sessionCtxt->getS11SgwCtrlFteid().fteid_m), 
+           sizeof(struct fteid));
+	memcpy(&(rb_msg.s1u_enb_fteid), 
+           &(bearerCtxt->getS1uEnbUserFteid().fteid_m),
 			sizeof(struct fteid));
 			
 	cmn::ipc::IpcAddress destAddr;
 	destAddr.u32 = TipcServiceInstance::s11AppInstanceNum_c;
 	
+    mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_TX_S11_RELEASE_BEARER_REQUEST);
 	MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
 	mmeIpcIf.dispatchIpcMsg((char *) &rb_msg, sizeof(rb_msg), destAddr);
 
@@ -134,6 +151,7 @@ ActStatus ActionHandlers:: send_s1_rel_cmd_to_ue(SM::ControlBlock& cb)
 	cmn::ipc::IpcAddress destAddr;
 	destAddr.u32 = TipcServiceInstance::s1apAppInstanceNum_c;
 
+    mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_TX_S1AP_S1_RELEASE_COMMAND);
 	MmeIpcInterface &mmeIpcIf = static_cast<MmeIpcInterface&>(compDb.getComponent(MmeIpcInterfaceCompId));
 	mmeIpcIf.dispatchIpcMsg((char *) &s1relcmd, sizeof(s1relcmd), destAddr);
 	
@@ -166,6 +184,7 @@ ActStatus ActionHandlers:: process_ue_ctxt_rel_comp(SM::ControlBlock& cb)
         mmCtxt->setEcmState(ecmIdle_c);
 
 
+    mmeStats::Instance()->increment(mmeStatsCounter::MME_PROCEDURES_S1_RELEASE_PROC);
 	MmeContextManagerUtils::deallocateProcedureCtxt(cb, s1Release_c);
 	ue_ctxt->setS1apEnbUeId(0);
 	ProcedureStats::num_of_s1_rel_comp_received++;
@@ -175,5 +194,26 @@ ActStatus ActionHandlers:: process_ue_ctxt_rel_comp(SM::ControlBlock& cb)
     	return ActStatus::PROCEED;
 }
 
-	
-	
+/***************************************
+* Action handler : abort_s1_release
+***************************************/
+ActStatus ActionHandlers::abort_s1_release(ControlBlock& cb)
+{
+    MmeErrorCause errorCause = noError_c;
+
+    MmeProcedureCtxt *procCtxt = dynamic_cast<MmeProcedureCtxt*>(cb.getTempDataBlock());
+    if (procCtxt != NULL)
+    {
+        errorCause = procCtxt->getMmeErrorCause();
+        MmeContextManagerUtils::deallocateProcedureCtxt(cb, s1Release_c);
+    }
+
+    mmeStats::Instance()->increment(mmeStatsCounter::MME_PROCEDURES_S1_RELEASE_PROC_FAILURE);
+    if (errorCause == abortDueToAttachCollision_c)
+    {
+        MmeContextManagerUtils::deleteUEContext(cb.getCBIndex(), false); // retain control block
+    }
+
+    return ActStatus::PROCEED;
+}
+

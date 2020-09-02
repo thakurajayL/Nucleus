@@ -24,6 +24,7 @@
 #include "gtpv2c_ie.h"
 #include "s11_config.h"
 #include <gtpV2StackWrappers.h>
+#include "gtp_cpp_wrapper.h"
 
 /************************************************************************
 Current file : Stage 5 handler.
@@ -44,14 +45,13 @@ extern int g_s11_fd;
 extern struct sockaddr_in g_s11_cp_addr;
 extern socklen_t g_s11_serv_size;
 
-extern s11_config g_s11_cfg;
+extern s11_config_t g_s11_cfg;
 volatile uint32_t g_s11_sequence = 1;
 
 /****Global and externs end***/
 struct CS_Q_msg *g_csReqInfo;
 
 extern struct GtpV2Stack* gtpStack_gp;
-struct MsgBuffer*  csReqMsgBuf_p = NULL;
 
 void
 bswap8_array(uint8_t *src, uint8_t *dest, uint32_t len)
@@ -93,16 +93,33 @@ convert_imsi_to_digits_array(uint8_t *src, uint8_t *dest, uint32_t len)
 static int
 create_session_processing(struct CS_Q_msg * g_csReqInfo)
 {
+	struct MsgBuffer*  csReqMsgBuf_p = createMsgBuffer(S11_MSGBUF_SIZE);
+	if(csReqMsgBuf_p == NULL)
+	{
+                log_msg(LOG_ERROR, "Error in initializing msg buffers required by gtp codec.\n");
+                return -1;
+        }
+    	struct sockaddr_in sgw_addr = {0};
 	GtpV2MessageHeader gtpHeader;
 	gtpHeader.msgType = GTP_CREATE_SESSION_REQ;
 	gtpHeader.sequenceNumber = g_s11_sequence;
 	gtpHeader.teidPresent = true;
 	gtpHeader.teid = 0; 
+
+	sgw_addr.sin_family = AF_INET;
+	sgw_addr.sin_port = htons(g_s11_cfg.egtp_def_port);
+    if(g_csReqInfo->sgw_ip != 0) {
+        sgw_addr.sin_addr.s_addr = g_csReqInfo->sgw_ip;
+    } else {
+        sgw_addr = g_s11_cp_addr; 
+    }
 	
 	g_s11_sequence++;
 	
 	log_msg(LOG_INFO,"In create session handler->ue_idx:%d\n",g_csReqInfo->ue_idx);
 
+    add_gtp_transaction(gtpHeader.sequenceNumber, 
+                          g_csReqInfo->ue_idx); 
 	CreateSessionRequestMsgData msgData;
 	memset(&msgData, 0, sizeof(msgData));
 
@@ -169,7 +186,7 @@ create_session_processing(struct CS_Q_msg * g_csReqInfo)
 	msgData.pgwS5S8AddressForControlPlaneOrPmipIePresent = true;
 	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipv4present = true;
 	msgData.pgwS5S8AddressForControlPlaneOrPmip.interfaceType = 7;
-	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipV4Address.ipValue = ntohl(g_s11_cfg.pgw_ip);
+	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipV4Address.ipValue = ntohl(g_csReqInfo->pgw_ip); /* host order address */
 
 	msgData.accessPointName.apnValue.count = g_csReqInfo->selected_apn.len;
 	memcpy(msgData.accessPointName.apnValue.values, g_csReqInfo->selected_apn.val, g_csReqInfo->selected_apn.len);
@@ -222,11 +239,13 @@ create_session_processing(struct CS_Q_msg * g_csReqInfo)
 
 	log_msg(LOG_INFO, "send %d bytes.\n",MsgBuffer_getBufLen(csReqMsgBuf_p));
 
+    uint32_t seq = g_s11_sequence;
+ 
 	int res = sendto (
 			g_s11_fd,
 			MsgBuffer_getDataPointer(csReqMsgBuf_p),
 			MsgBuffer_getBufLen(csReqMsgBuf_p), 0,
-			(struct sockaddr*)&g_s11_cp_addr,
+			(struct sockaddr*)(&sgw_addr),
 			g_s11_serv_size);
 	if (res < 0) {
 		log_msg(LOG_ERROR,"Error in sendto in detach stage 3 post to next\n");
@@ -235,7 +254,7 @@ create_session_processing(struct CS_Q_msg * g_csReqInfo)
 	log_msg(LOG_INFO,"%d bytes sent. Err : %d, %s\n",res,errno,
 			strerror(errno));
 
-	MsgBuffer_reset(csReqMsgBuf_p);
+	MsgBuffer_free(csReqMsgBuf_p);
 
 	return SUCCESS;
 }

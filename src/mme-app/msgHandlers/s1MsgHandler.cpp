@@ -1,21 +1,10 @@
 /*
  * Copyright (c) 2019, Infosys Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <msgHandlers/s1MsgHandler.h>
-
 #include <event.h>
 #include <ipcTypes.h>
 #include <log.h>
@@ -23,6 +12,8 @@
 #include <contextManager/subsDataGroupManager.h>
 #include <mmeSmDefs.h>
 #include <eventMessage.h>
+#include "mmeNasUtils.h"
+#include "mmeStatsPromClient.h"
 
 using namespace SM;
 using namespace mme;
@@ -44,6 +35,7 @@ S1MsgHandler* S1MsgHandler::Instance()
 	return &msgHandler;
 }
 
+// Starting point 
 void S1MsgHandler::handleS1Message_v(IpcEventMessage* eMsg)
 {
 	log_msg(LOG_INFO, "S1 - handleS1Message_v\n");
@@ -59,6 +51,7 @@ void S1MsgHandler::handleS1Message_v(IpcEventMessage* eMsg)
 	    	delete eMsg;
 	    	return;
 	}
+    	log_msg(LOG_INFO, "message size %d in s1 ipc message \n",msgBuf->getLength());
 	if (msgBuf->getLength() < sizeof (s1_incoming_msg_data_t))
 	{
 	    log_msg(LOG_INFO, "Not enough bytes in s1 ipc message"
@@ -69,88 +62,130 @@ void S1MsgHandler::handleS1Message_v(IpcEventMessage* eMsg)
 	    	return;
 	}
 
-	const s1_incoming_msg_data_t* msgData_p = (s1_incoming_msg_data_t*)(msgBuf->getDataPointer());
+	s1_incoming_msg_data_t* msgData_p = (s1_incoming_msg_data_t*)(msgBuf->getDataPointer());
 
+	struct nasPDU nas={0};
+	/* Below function should take care of decryption and integrity check */
+	/* Get the control block and pass it to below function */
+	if(msgData_p->msg_type == raw_nas_msg)
+	{
+        s1apMsg_plus_raw_nas *nasMsg = &msgData_p->msg_data.rawMsg;
+
+		if(E_FAIL == MmeNasUtils::parse_nas_pdu(msgData_p,
+                                    nasMsg->nasMsgBuf, 
+                                    nasMsg->nasMsgSize, &nas))
+        {
+            log_msg(LOG_ERROR,"NAS pdu parse failed.\n");
+            return;
+        }
+		MmeNasUtils::copy_nas_to_s1msg(&nas, msgData_p);
+	}
+
+	log_msg(LOG_INFO, "S1 - handleS1Message_v %d\n",msgData_p->msg_type);
 	switch (msgData_p->msg_type)
 	{
 		case msg_type_t::attach_request:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_NAS_ATTACH_REQUEST);
 			handleInitUeAttachRequestMsg_v(eMsg);
 			break;
 
 		case msg_type_t::id_response:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_NAS_IDENTITY_RESPONSE);
 			handleIdentityResponseMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::auth_response:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_NAS_AUTHENTICATION_RESPONSE);
 			handleAuthResponseMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::sec_mode_complete:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_NAS_SECURITY_MODE_RESPONSE);
 			handleSecurityModeResponse_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::esm_info_response:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_NAS_ESM_RESPONSE);
 			handleEsmInfoResponse_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::init_ctxt_response:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_INIT_CONTEXT_RESPONSE);
 			handleInitCtxtResponse_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::attach_complete:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_NAS_ATTACH_COMPLETE);
 			handleAttachComplete_v(eMsg, msgData_p->ue_idx);
 			break;
                 
 		case msg_type_t::detach_request:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_NAS_DETACH_REQUEST);
 			handleDetachRequest_v(eMsg, msgData_p->ue_idx);
 			break;
 					
 		case msg_type_t::s1_release_request:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_RELEASE_REQUEST);
 			handleS1ReleaseRequestMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 			
 		case msg_type_t::s1_release_complete:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_RELEASE_COMPLETE);
 			handleS1ReleaseComplete_v(eMsg, msgData_p->ue_idx);
 			break;
 		
 		case msg_type_t::detach_accept_from_ue:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_DETACH_ACCEPT);
 			handleDetachAcceptFromUE_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case  msg_type_t::service_request:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_SERVICE_REQUEST);
 		    handleServiceRequest_v(eMsg, msgData_p->ue_idx);
 		    break;
 					
 		case msg_type_t::tau_request:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_TAU_REQUEST);
 			handleTauRequestMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::handover_request_acknowledge:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_HANDOVER_REQUEST_ACK);
 		    handleHandoverRequestAckMsg_v(eMsg, msgData_p->ue_idx);
 		    break;
 
 		case msg_type_t::handover_notify:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_HANDOVER_NOTIFY);
 		    handleHandoverNotifyMsg_v(eMsg, msgData_p->ue_idx);
 		    break;
 
 		case msg_type_t::handover_required:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_HANDOVER_REQUIRED);
 		    handleHandoverRequiredMsg_v(eMsg, msgData_p->ue_idx);
 		    break;
 		
 		case msg_type_t::enb_status_transfer:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_ENB_STATUS_TRANSFER);
 			handleEnbStatusTransferMsg_v(eMsg, msgData_p->ue_idx);
 		    break;
 
 		case msg_type_t::handover_cancel:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_HANDOVER_CANCEL);
 			handleHandoverCancelMsg_v(eMsg, msgData_p->ue_idx);
 		    break;
 
 		case msg_type_t::handover_failure:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_HANDOVER_FAILURE);
 			handleHandoverFailureMsg_v(eMsg, msgData_p->ue_idx);
 		    break;
+            
+		case msg_type_t::erab_mod_indication:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S1AP_ERAB_MODIFICATION_INDICATION);
+			handleErabModificationIndicationMsg_v(eMsg, msgData_p->ue_idx);		
+			break;
 
 		default:
-			log_msg(LOG_INFO, "Unhandled S1 Message %d \n", msgData_p->msg_type);
+			log_msg(LOG_ERROR, "Unhandled S1 Message %d \n", msgData_p->msg_type);
 			delete eMsg;
 	}
 }
@@ -204,6 +239,7 @@ void S1MsgHandler::handleAuthResponseMsg_v(IpcEventMessage* eMsg, uint32_t ueIdx
 		return;
 	}
 
+    // add event in the controBlk
 	// Fire attach-start event, insert cb to procedure queue
 	SM::Event evt(AUTH_RESP_FROM_UE, eMsg);
 	controlBlk_p->addEventToProcQ(evt);
@@ -500,5 +536,24 @@ void S1MsgHandler::handleHandoverFailureMsg_v(IpcEventMessage *eMsg,
 
     // Fire Handover Failure event, insert cb to procedure queue
     SM::Event evt(HO_FAILURE_FROM_TARGET_ENB, eMsg);
+    controlBlk_p->addEventToProcQ(evt);
+}
+
+void S1MsgHandler::handleErabModificationIndicationMsg_v(IpcEventMessage* eMsg, 
+        uint32_t ueIdx)
+{
+	log_msg(LOG_INFO, "S1 - handleErabModificationIndicationMsg_v\n");
+
+    SM::ControlBlock* controlBlk_p = 
+            SubsDataGroupManager::Instance()->findControlBlock(ueIdx);
+	if(controlBlk_p == NULL)
+    {
+        log_msg(LOG_ERROR, "handleErabModificationIndicationMsg_v: "
+                "Failed to find UE Context using idx %d\n", ueIdx);
+        return;
+    }
+
+    // Fire erab_mod_ind_start event, insert cb to procedure queue
+    SM::Event evt(ERAB_MOD_INDICATION_FROM_ENB, eMsg);
     controlBlk_p->addEventToProcQ(evt);
 }

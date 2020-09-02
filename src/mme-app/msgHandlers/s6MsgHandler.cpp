@@ -1,17 +1,7 @@
 /*
  * Copyright (c) 2019, Infosys Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 #include <msgHandlers/s6MsgHandler.h>
 
@@ -21,6 +11,7 @@
 #include <log.h>
 #include <mmeSmDefs.h>
 #include <eventMessage.h>
+#include "mmeStatsPromClient.h"
 
 using namespace SM;
 using namespace mme;
@@ -30,7 +21,9 @@ using namespace cmn;
 S6MsgHandler::~S6MsgHandler() {
 
 }
-S6MsgHandler::S6MsgHandler() {
+
+S6MsgHandler::S6MsgHandler()
+{
 
 }
 
@@ -65,18 +58,22 @@ void S6MsgHandler::handleS6Message_v(IpcEventMessage* eMsg)
 	switch (msgData_p->msg_type)
 	{
 		case msg_type_t::auth_info_answer:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S6A_AUTHENTICATION_INFORMATION_ANSWER);
 			handleAuthInfoAnswer_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::update_loc_answer:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S6A_UPDATE_LOCATION_ANSWER);
 			handleUpdateLocationAnswer_v(eMsg,  msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::purge_answser:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S6A_PURGE_ANSWER);
 			handlePurgeAnswer_v(eMsg,  msgData_p->ue_idx);
 			break;
 		
 		case msg_type_t::cancel_location_request:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S6A_CANCEL_LOCATION_REQUEST);
 			handleCancelLocationRequest_v(eMsg);
 			break;
 

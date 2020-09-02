@@ -13,7 +13,10 @@ extern "C" {
     uint32_t findControlBlockWithEnbFd(uint32_t enbFd);
     uint32_t getEnbFdWithCbIndex(uint32_t cbIndex);
     uint32_t setValuesForEnbCtx(uint32_t cbIndex, 
-                                struct EnbStruct* enbCtx);
+                                struct EnbStruct* enbCtx,
+                                bool update);
+
+    bool getControlBlockDetailsEnbFd(uint32_t sd, struct EnbStruct *temp);
 
 #ifdef __cplusplus
 }

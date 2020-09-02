@@ -1,17 +1,7 @@
 /*
  * Copyright (c) 2019, Infosys Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <msgHandlers/gtpMsgHandler.h>
@@ -23,6 +13,7 @@
 #include <log.h>
 #include <mmeSmDefs.h>
 #include <utils/mmeCommonUtils.h>
+#include "mmeStatsPromClient.h"
 
 using namespace SM;
 using namespace mme;
@@ -32,8 +23,8 @@ GtpMsgHandler::~GtpMsgHandler() {
 
 }
 
-GtpMsgHandler::GtpMsgHandler() {
-
+GtpMsgHandler::GtpMsgHandler()
+{
 
 }
 
@@ -70,23 +61,27 @@ void GtpMsgHandler::handleGtpMessage_v(IpcEventMessage* eMsg)
 	switch (msgData_p->msg_type)
 	{
 		case msg_type_t::create_session_response:
-			log_msg(LOG_DEBUG,"Create Session Response msg rxed\n");
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S11_CREATE_SESSION_RESPONSE);
 			handleCreateSessionResponseMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::modify_bearer_response:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S11_MODIFY_BEARER_RESPONSE);
 			handleModifyBearerResponseMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 
 		case msg_type_t::delete_session_response:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S11_DELETE_SESSION_RESPONSE);
 			handleDeleteSessionResponseMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 			
 		case msg_type_t::release_bearer_response:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S11_RELEASE_BEARER_RESPONSE);
 			handleReleaseBearerResponseMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 		
 		case msg_type_t::downlink_data_notification:
+			mmeStats::Instance()->increment(mmeStatsCounter::MME_MSG_RX_S11_DOWNLINK_NOTIFICATION_INDICATION);
 			handleDdnMsg_v(eMsg, msgData_p->ue_idx);
 			break;
 

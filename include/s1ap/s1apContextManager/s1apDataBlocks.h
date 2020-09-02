@@ -2,16 +2,7 @@
 /*
  * Copyright 2019-present, Infosys Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 #ifndef DGM_BLOCKSTRUCTURES_H
 #define DGM_BLOCKSTRUCTURES_H
@@ -56,7 +47,7 @@ namespace mme
 			* getEnbFd
 			*    get enbFd from EnbContext
 			****************************************/
-			int getEnbFd()const;				
+			int getEnbFd()const;			
 			
 			/****************************************
 			* setEnbId
@@ -68,7 +59,7 @@ namespace mme
 			* getEnbId
 			*    get enbId from EnbContext
 			****************************************/
-			int getEnbId()const;				
+			int getEnbId()const;			
 			
 			/****************************************
 			* setS1apEnbUeId
@@ -80,7 +71,7 @@ namespace mme
 			* getS1apEnbUeId
 			*    get s1apEnbUeId from EnbContext
 			****************************************/
-			int getS1apEnbUeId()const;				
+			int getS1apEnbUeId()const;			
 			
 			/****************************************
 			* setContextID
@@ -92,7 +83,7 @@ namespace mme
 			* getContextID
 			*    get contextID from EnbContext
 			****************************************/
-			uint32_t getContextID()const;				
+			uint32_t getContextID()const;			
 			
 			/****************************************
 			* setTai
@@ -104,7 +95,25 @@ namespace mme
 			* getTai
 			*    get tai from EnbContext
 			****************************************/
-			const TAI& getTai()const;				
+			const TAI& getTai()const;			
+			
+			/****************************************
+			* setEnbname
+			*    set enbname to EnbContext
+			****************************************/
+			void setEnbname(const char* enbname_i,uint16_t len);
+			
+			/****************************************
+			* getEnbname
+			*    get enbname from EnbContext
+			****************************************/
+			const char* getEnbname()const;
+
+			/****************************************
+			* getEnbnameLen
+			*    get enbnameLen from EnbContext
+			****************************************/
+			uint16_t getEnbnameLen()const;				
 			
 		
 		private:
@@ -123,6 +132,11 @@ namespace mme
 			
 			// DataName
 			TAI tai_m;
+			
+			// DataName
+			uint16_t enbnameLen_m;
+			char enbname_m[256];
+			
 			
 	};
 	

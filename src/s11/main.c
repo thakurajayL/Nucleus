@@ -1,4 +1,3 @@
-//test
 /*
  * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2019, Infosys Ltd.
@@ -16,17 +15,17 @@
 #include <pthread.h>
 #include "thread_pool.h"
 #include "err_codes.h"
-#include "options.h"
 #include "ipc_api.h"
 #include "s11.h"
 #include "s11_config.h"
 #include <sys/types.h>
 #include "msgType.h"
+#include "s11_options.h"
 #include <gtpV2StackWrappers.h>
+#include "gtp_cpp_wrapper.h"
 
 /**Global and externs **/
-extern s11_config g_s11_cfg;
-
+extern s11_config_t g_s11_cfg;
 /*S11 CP communication parameters*/
 int g_s11_fd;
 struct sockaddr_in g_s11_cp_addr;
@@ -98,11 +97,6 @@ void * tipc_msg_handler_s11()
 	}
 }
 struct GtpV2Stack* gtpStack_gp = NULL;
-extern struct MsgBuffer* csReqMsgBuf_p;
-extern struct MsgBuffer* mbReqMsgBuf_p;
-extern struct MsgBuffer* dsReqMsgBuf_p;
-extern struct MsgBuffer* rbReqMsgBuf_p;
-extern struct MsgBuffer* ddnAckMsgBuf_p;
 
 int
 init_s11_workers()
@@ -150,8 +144,7 @@ init_gtpv2()
 	struct in_addr mme_local_addr = {g_s11_cfg.local_egtp_ip};
 	fprintf(stderr, "....................local egtp %s\n", inet_ntoa(mme_local_addr));
 	g_client_addr.sin_addr.s_addr = htonl(g_s11_cfg.local_egtp_ip);
-	g_client_addr.sin_port = htons(0); /* TODO: Read value from config */
-	g_client_addr.sin_port = htons(g_s11_cfg.egtp_def_port); 
+	g_client_addr.sin_port = htons(g_s11_cfg.egtp_def_port);
 
 	bind(g_s11_fd, (struct sockaddr *)&g_client_addr, sizeof(g_client_addr));
 	g_client_addr_size = sizeof(g_client_addr);
@@ -202,6 +195,8 @@ s11_reader()
 
 		if(len > 0) {
 			MsgBuffer* tmp_buf_p = createMsgBuffer(len);
+			uint32_t ip = ntohl(g_s11_cp_addr.sin_addr.s_addr);
+			MsgBuffer_writeUint32(tmp_buf_p, ip, true);
 			MsgBuffer_writeBytes(tmp_buf_p, buffer, len, true);
 			MsgBuffer_rewind(tmp_buf_p);
 
@@ -230,6 +225,7 @@ main(int argc, char **argv)
 		init_logging("hostbased","/tmp/s11logs.txt" );
 	}
 
+    init_cpp_gtp_tables();
 
 	init_parser("conf/s11.json");
 	parse_s11_conf();
@@ -239,18 +235,6 @@ main(int argc, char **argv)
 	if (gtpStack_gp == NULL)
 	{
 		log_msg(LOG_ERROR, "Error in initializing ipc.\n");
-		return -1;
-	}
-
-	csReqMsgBuf_p = createMsgBuffer(4096);
-	mbReqMsgBuf_p = createMsgBuffer(4096);
-	dsReqMsgBuf_p = createMsgBuffer(4096);
-	rbReqMsgBuf_p = createMsgBuffer(4096);
-	ddnAckMsgBuf_p = createMsgBuffer(4096);
-
-	if (csReqMsgBuf_p == NULL || mbReqMsgBuf_p == NULL || dsReqMsgBuf_p == NULL || rbReqMsgBuf_p == NULL || ddnAckMsgBuf_p == NULL)
-	{
-		log_msg(LOG_ERROR, "Error in initializing msg buffers required by gtp codec.\n");
 		return -1;
 	}
 

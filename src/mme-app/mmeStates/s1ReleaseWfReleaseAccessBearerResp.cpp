@@ -29,7 +29,7 @@ using namespace SM;
 /******************************************************************************
 * Constructor
 ******************************************************************************/
-S1ReleaseWfReleaseAccessBearerResp::S1ReleaseWfReleaseAccessBearerResp():State(s1_release_wf_release_access_bearer_resp)
+S1ReleaseWfReleaseAccessBearerResp::S1ReleaseWfReleaseAccessBearerResp():State(s1_release_wf_release_access_bearer_resp, defaultStateGuardTimerDuration_c)
 {
         stateEntryAction = &MmeStatesUtils::on_state_entry;
         stateExitAction = &MmeStatesUtils::on_state_exit;
@@ -63,5 +63,18 @@ void S1ReleaseWfReleaseAccessBearerResp::initialize()
                 actionTable.addAction(&ActionHandlers::send_s1_rel_cmd_to_ue);
                 actionTable.setNextState(S1ReleaseWfUeCtxtReleaseComp::Instance());
                 eventToActionsMap.insert(pair<uint16_t, ActionTable>(REL_AB_RESP_FROM_SGW, actionTable));
+        }
+        {
+                ActionTable actionTable;
+                actionTable.addAction(&ActionHandlers::handle_attach_request);
+                actionTable.addAction(&ActionHandlers::del_session_req);
+                actionTable.addAction(&ActionHandlers::abort_s1_release);
+                actionTable.addAction(&ActionHandlers::default_attach_req_handler);
+                eventToActionsMap.insert(pair<uint16_t, ActionTable>(ATTACH_REQ_FROM_UE, actionTable));
+        }
+        {
+                ActionTable actionTable;
+                actionTable.addAction(&ActionHandlers::abort_s1_release);
+                eventToActionsMap.insert(pair<uint16_t, ActionTable>(STATE_GUARD_TIMEOUT, actionTable));
         }
 }

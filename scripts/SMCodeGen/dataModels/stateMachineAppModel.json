@@ -63,6 +63,13 @@
                                     "DEFAULT_S1_HO_HANDLER"
                                 ],
                                 "NextState":"end_state"
+                            },
+                            {
+                                "Name":"ERAB_MOD_INDICATION_FROM_ENB",
+                                "Actions":[
+                                    "DEFAULT_ERAB_MOD_INDICATION_HANDLER"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     }
@@ -146,6 +153,22 @@
                                     "AUTH_RESPONSE_VALIDATE"
                                 ],
                                 "NextState":"attach_wf_auth_resp_validate"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"ABORT_EVENT",
+                                "Actions":[
+                                    "SEND_ATTACH_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_ATTACH"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -187,6 +210,13 @@
                                 "NextState":"attach_wf_esm_info_check"
                             },
                             {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
                                 "Name":"ABORT_EVENT",
                                 "Actions":[
                                     "SEND_ATTACH_REJECT",
@@ -226,7 +256,23 @@
                                     "SEND_ULR_TO_HSS"
                                 ],
                                 "NextState":"attach_wf_ula"
-                            }
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"ABORT_EVENT",
+                                "Actions":[
+                                    "SEND_ATTACH_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_ATTACH"
+                                ],
+                                "NextState":"end_state"
+                             }
                         ]
                     },
                     {
@@ -261,7 +307,14 @@
                                     "ABORT_ATTACH"
                                 ],
                                 "NextState":"end_state"
-                             }
+                             },
+                             {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS_FOR_CSREQ_IND"
+                                ],
+                                "NextState":"end_state"
+                            }
                         ]
                     },
                     {
@@ -280,7 +333,24 @@
                                     "PROCESS_ATTACH_CMP_FROM_UE"
                                 ],
                                 "NextState":"attach_wf_init_ctxt_resp"
-                            }
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"ABORT_EVENT",
+                                "Actions":[
+                                    "DEL_SESSION_REQ",
+                                    "SEND_ATTACH_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_ATTACH"
+                                ],
+                                "NextState":"end_state"
+                             }
                         ]
                     },
                     {
@@ -293,7 +363,24 @@
                                     "SEND_MB_REQ_TO_SGW"
                                 ],
                                 "NextState":"attach_wf_mb_resp"
-                            }
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"ABORT_EVENT",
+                                "Actions":[
+                                    "DEL_SESSION_REQ",
+                                    "SEND_ATTACH_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_ATTACH"
+                                ],
+                                "NextState":"end_state"
+                             }
                         ]
                     },
                     {
@@ -306,7 +393,24 @@
                                     "SEND_MB_REQ_TO_SGW"
                                 ],
                                 "NextState":"attach_wf_mb_resp"
-                            }
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"ABORT_EVENT",
+                                "Actions":[
+                                    "DEL_SESSION_REQ",
+                                    "SEND_ATTACH_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_ATTACH"
+                                ],
+                                "NextState":"end_state"
+                             }
                         ]
                     },
                     {
@@ -320,13 +424,40 @@
                                     "ATTACH_DONE"
                                 ],
                                 "NextState":"end_state"
-                            }
+                            },
+                            {
+                                "Name":"ATTACH_REQ_FROM_UE",
+                                "Actions":[
+                                    "HANDLE_ATTACH_REQUEST",
+                                    "DEL_SESSION_REQ",
+                                    "ABORT_ATTACH",
+                                    "DEFAULT_ATTACH_REQ_HANDLER"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"ABORT_EVENT",
+                                "Actions":[
+                                    "DEL_SESSION_REQ",
+                                    "SEND_ATTACH_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_ATTACH"
+                                ],
+                                "NextState":"end_state"
+                             }
                         ]
                     }
                 ],
                 "Properties": [
                     {
-                        "stateGuardTimerFeature" : "disabled"
+                        "stateGuardTimerFeature" : "enabled"
                     }
                 ]
             },
@@ -340,9 +471,16 @@
                                 "Name":"DETACH_REQ_FROM_UE",
                                 "Actions":[
                                     "DEL_SESSION_REQ",
-				    "PURGE_REQ"
+                                    "PURGE_REQ"
                                 ],
                                 "NextState":"detach_wf_purge_resp_del_session_resp"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "DETACH_ACCEPT_TO_UE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -362,6 +500,13 @@
                                     "PROCESS_PUR_RESP"
                                 ],
                                 "NextState":"detach_wf_del_session_resp"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "DETACH_ACCEPT_TO_UE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -370,6 +515,14 @@
                         "Events":[
                             {
                                 "Name":"DEL_SESSION_RESP_FROM_SGW",
+                                "Actions":[
+                                    "PROCESS_DEL_SESSION_RESP",
+                                    "DETACH_ACCEPT_TO_UE"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
                                 "Actions":[
                                     "PROCESS_DEL_SESSION_RESP",
                                     "DETACH_ACCEPT_TO_UE"
@@ -385,7 +538,14 @@
                                 "Name":"PURGE_RESP_FROM_HSS",
                                 "Actions":[
                                     "PROCESS_PUR_RESP",
-				    "DETACH_ACCEPT_TO_UE"
+                                    "DETACH_ACCEPT_TO_UE"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "DETACH_ACCEPT_TO_UE"
                                 ],
                                 "NextState":"end_state"
                             }
@@ -394,7 +554,7 @@
                 ],
                 "Properties": [
                     {
-                        "stateGuardTimerFeature" : "disabled"
+                        "stateGuardTimerFeature" : "enabled"
                     }
                 ]
             },
@@ -410,6 +570,20 @@
                                     "SEND_REL_AB_REQ_TO_SGW"
                                 ],
                                 "NextState":"s1_release_wf_release_access_bearer_resp"
+                            },
+                            {
+                                "Name":"ABORT_EVENT",
+                                "Actions":[
+                                    "ABORT_S1_RELEASE"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "ABORT_S1_RELEASE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -423,6 +597,23 @@
                                     "SEND_S1_REL_CMD_TO_UE"
                                 ],
                                 "NextState":"s1_release_wf_ue_ctxt_release_comp"
+                            },
+                            {
+                                "Name":"ATTACH_REQ_FROM_UE",
+                                "Actions":[
+                                    "HANDLE_ATTACH_REQUEST",
+                                    "DEL_SESSION_REQ",
+                                    "ABORT_S1_RELEASE",
+                                    "DEFAULT_ATTACH_REQ_HANDLER"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "ABORT_S1_RELEASE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -435,13 +626,20 @@
                                     "PROCESS_UE_CTXT_REL_COMP"
                                 ],
                                 "NextState":"end_state"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "ABORT_S1_RELEASE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     }
                 ],
                 "Properties": [
                     {
-                        "stateGuardTimerFeature" : "disabled"
+                        "stateGuardTimerFeature" : "enabled"
                     }
                 ]
             },
@@ -453,6 +651,14 @@
                         "Events":[
                             {
                                 "Name":"CLR_FROM_HSS",
+                                "Actions":[
+                                    "NI_DETACH_REQ_TO_UE",
+                                    "DEL_SESSION_REQ"
+                                ],
+                                "NextState":"ni_detach_wf_det_accpt_del_sess_resp"
+                            },
+                            {
+                                "Name":"MME_INIT_DETACH",
                                 "Actions":[
                                     "NI_DETACH_REQ_TO_UE",
                                     "DEL_SESSION_REQ"
@@ -534,7 +740,8 @@
                             {
                                 "Name":"DDN_FROM_SGW",
                                 "Actions":[
-                                    "SEND_PAGING_REQ_TO_UE"
+                                    "SEND_PAGING_REQ_TO_UE",
+                                    "SEND_DDN_ACK_TO_SGW"
                                 ],
                                 "NextState":"paging_wf_service_req"
                             }
@@ -547,10 +754,16 @@
                                 "Name":"SERVICE_REQUEST_FROM_UE",
                                 "Actions":[
                                     "PROCESS_SERVICE_REQUEST",
-                                    "SEND_DDN_ACK_TO_SGW",
                                     "AUTH_REQ_TO_UE"
                                 ],
                                 "NextState":"service_request_wf_auth_response"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "ABORT_SERVICE_REQ_PROCEDURE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -563,6 +776,15 @@
                                     "AUTH_REQ_TO_UE"
                                 ],
                                 "NextState":"service_request_wf_auth_response"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "SEND_SERVICE_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_SERVICE_REQ_PROCEDURE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -575,6 +797,15 @@
                                     "AUTH_RESPONSE_VALIDATE"
                                 ],
                                 "NextState":"service_request_wf_auth_resp_validate"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "SEND_SERVICE_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_SERVICE_REQ_PROCEDURE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -617,6 +848,15 @@
                                 "NextState":"service_request_wf_init_ctxt_resp"
                             },
                             {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "SEND_SERVICE_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_SERVICE_REQ_PROCEDURE"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
                                 "Name":"ABORT_EVENT",
                                 "Actions":[
                                     "SEND_SERVICE_REJECT",
@@ -637,6 +877,15 @@
                                     "AUTH_REQ_TO_UE"
                                 ],
                                 "NextState":"service_request_wf_auth_response"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "SEND_SERVICE_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_SERVICE_REQ_PROCEDURE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -650,6 +899,15 @@
                                     "SEND_MB_REQ_TO_SGW_SVC_REQ"
                                 ],
                                 "NextState":"service_request_wf_mb_resp"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "SEND_SERVICE_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_SERVICE_REQ_PROCEDURE"
+                                ],
+                                "NextState":"end_state"
                             }
                         ]
                     },
@@ -659,7 +917,17 @@
                             {
                                 "Name":"MB_RESP_FROM_SGW",
                                 "Actions":[
-                                    "PROCESS_MB_RESP_SVC_REQ"
+                                    "PROCESS_MB_RESP_SVC_REQ",
+                                    "SERVICE_REQUEST_COMPLETE"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "SEND_SERVICE_REJECT",
+                                    "SEND_S1_REL_CMD_TO_UE",
+                                    "ABORT_SERVICE_REQ_PROCEDURE"
                                 ],
                                 "NextState":"end_state"
                             }
@@ -668,7 +936,7 @@
                 ],
                 "Properties": [
                     {
-                        "stateGuardTimerFeature" : "disabled"
+                        "stateGuardTimerFeature" : "enabled"
                     }
                 ]
             },
@@ -681,7 +949,6 @@
                             {
                                 "Name":"TAU_REQUEST_FROM_UE",
                                 "Actions":[
-                                    "PROCESS_TAU_REQUEST",
                                     "SEND_TAU_RESPONSE_TO_UE"
                                 ],
                                 "NextState":"end_state"
@@ -836,6 +1103,57 @@
                 "Properties": [
                     {
                         "stateGuardTimerFeature" : "disabled"
+                    }
+                ]
+            },
+            {
+	        "Name":"ERAB_MOD_INDICATION",
+                "States":[
+                    {
+                        "Name":"erab_mod_ind_start",
+                        "Events":[
+                            {
+                                "Name":"eRAB_MOD_IND_START",
+                                "Actions":[
+                                    "SEND_MB_REQ_TO_SGW_SVC_REQ"
+                                ],
+                                "NextState":"erab_mod_ind_wf_mb_resp"
+                            }
+                        ]
+                    },
+                    {
+		        "Name":"erab_mod_ind_wf_mb_resp",
+                        "Events":[
+                            {
+				"Name":"MB_RESP_FROM_SGW",
+				"Actions":[
+				    "PROCESS_MB_RESP_SVC_REQ",
+				    "SEND_ERAB_MOD_CONF_TO_ENB",
+				    "ERAB_MOD_IND_COMPLETE"
+				],
+				"NextState":"end_state"
+                            },
+			    {
+                                "Name":"ABORT_EVENT",
+                                "Actions":[
+                                    "ABORT_ERAB_MOD_INDICATION"
+                                ],
+                                "NextState":"end_state"
+                            },
+                            {
+                                "Name":"STATE_GUARD_TIMEOUT",
+                                "Actions":[
+                                    "HANDLE_STATE_GUARD_TIMEOUTS_FOR_ERAB_MOD_IND",
+                                    "ABORT_ERAB_MOD_INDICATION"
+                                ],
+                                "NextState":"end_state"
+                            }
+                        ]
+                    }
+                ],
+                "Properties":[
+                    {
+                        "stateGuardTimerFeature" : "enabled"
                     }
                 ]
             }

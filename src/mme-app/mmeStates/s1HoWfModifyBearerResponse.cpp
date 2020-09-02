@@ -21,8 +21,7 @@
 #include "utils/mmeTimerTypes.h"
 
 #include "mmeStates/s1HoWfModifyBearerResponse.h"	
-#include "mmeStates/s1HoWfTauCheck.h"	
-#include "mmeStates/s1HoWfModifyBearerResponse.h"
+#include "mmeStates/s1HoWfTauCheck.h"
 
 using namespace mme;
 using namespace SM;

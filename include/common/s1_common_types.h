@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2020-present Open Networking Foundation
  *
@@ -20,6 +19,7 @@ struct EnbStruct
     int enbId_m;
     int s1apEnbUeId_m;
     struct TAI tai_m;
+    char eNbName[128];
 };
 
 #endif

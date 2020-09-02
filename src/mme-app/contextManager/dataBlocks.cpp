@@ -34,8 +34,6 @@ namespace mme
             accessRestrictionData_m(0),
             imsi_m(),
             msisdn_m(),
-            dwnLnkSeqNo_m(0),
-            upLnkSeqNo_m(0),
             ueState_m(InvalidState),
             tai_m(),
             utranCgi_m(),
@@ -68,10 +66,11 @@ namespace mme
 	/******************************************************************************
 	* returns enbFd
 	******************************************************************************/	
-	uint32_t UEContext::getEnbFd() const
-	{
-		return enbFd_m;
-	}
+        uint32_t UEContext::getEnbFd() const
+        {
+                return enbFd_m;
+        }
+
 	
 	/******************************************************************************
 	* sets s1apEnbUeId
@@ -84,10 +83,11 @@ namespace mme
 	/******************************************************************************
 	* returns s1apEnbUeId
 	******************************************************************************/	
-	uint32_t UEContext::getS1apEnbUeId() const
-	{
-		return s1apEnbUeId_m;
-	}
+        uint32_t UEContext::getS1apEnbUeId() const
+        {
+                return s1apEnbUeId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets subscriptionStatus
@@ -100,10 +100,11 @@ namespace mme
 	/******************************************************************************
 	* returns subscriptionStatus
 	******************************************************************************/	
-	int UEContext::getSubscriptionStatus() const
-	{
-		return subscriptionStatus_m;
-	}
+        int UEContext::getSubscriptionStatus() const
+        {
+                return subscriptionStatus_m;
+        }
+
 	
 	/******************************************************************************
 	* sets netAccessMode
@@ -116,10 +117,11 @@ namespace mme
 	/******************************************************************************
 	* returns netAccessMode
 	******************************************************************************/	
-	int UEContext::getNetAccessMode() const
-	{
-		return netAccessMode_m;
-	}
+        int UEContext::getNetAccessMode() const
+        {
+                return netAccessMode_m;
+        }
+
 	
 	/******************************************************************************
 	* sets contextID
@@ -132,10 +134,11 @@ namespace mme
 	/******************************************************************************
 	* returns contextID
 	******************************************************************************/	
-	uint32_t UEContext::getContextID() const
-	{
-		return contextID_m;
-	}
+        uint32_t UEContext::getContextID() const
+        {
+                return contextID_m;
+        }
+
 	
 	/******************************************************************************
 	* sets rauTauTimer
@@ -148,10 +151,11 @@ namespace mme
 	/******************************************************************************
 	* returns rauTauTimer
 	******************************************************************************/	
-	uint32_t UEContext::getRauTauTimer() const
-	{
-		return rauTauTimer_m;
-	}
+        uint32_t UEContext::getRauTauTimer() const
+        {
+                return rauTauTimer_m;
+        }
+
 	
 	/******************************************************************************
 	* sets accessRestrictionData
@@ -164,10 +168,11 @@ namespace mme
 	/******************************************************************************
 	* returns accessRestrictionData
 	******************************************************************************/	
-	uint32_t UEContext::getAccessRestrictionData() const
-	{
-		return accessRestrictionData_m;
-	}
+        uint32_t UEContext::getAccessRestrictionData() const
+        {
+                return accessRestrictionData_m;
+        }
+
 	
 	/******************************************************************************
 	* sets imsi
@@ -180,10 +185,11 @@ namespace mme
 	/******************************************************************************
 	* returns imsi
 	******************************************************************************/	
-	const DigitRegister15& UEContext::getImsi() const
-	{
-		return imsi_m;
-	}
+        const DigitRegister15& UEContext::getImsi() const
+        {
+                return imsi_m;
+        }
+
 	
 	/******************************************************************************
 	* sets msisdn
@@ -196,42 +202,11 @@ namespace mme
 	/******************************************************************************
 	* returns msisdn
 	******************************************************************************/	
-	const DigitRegister15& UEContext::getMsisdn() const
-	{
-		return msisdn_m;
-	}
-	
-	/******************************************************************************
-	* sets dwnLnkSeqNo
-	******************************************************************************/
-	void UEContext::setDwnLnkSeqNo( uint16_t dwnLnkSeqNo_i )
-	{
-		dwnLnkSeqNo_m = dwnLnkSeqNo_i;
-	}
-	
-	/******************************************************************************
-	* returns dwnLnkSeqNo
-	******************************************************************************/	
-	uint16_t UEContext::getDwnLnkSeqNo() const
-	{
-		return dwnLnkSeqNo_m;
-	}
-	
-	/******************************************************************************
-	* sets upLnkSeqNo
-	******************************************************************************/
-	void UEContext::setUpLnkSeqNo( uint16_t upLnkSeqNo_i )
-	{
-		upLnkSeqNo_m = upLnkSeqNo_i;
-	}
-	
-	/******************************************************************************
-	* returns upLnkSeqNo
-	******************************************************************************/	
-	uint16_t UEContext::getUpLnkSeqNo() const
-	{
-		return upLnkSeqNo_m;
-	}
+        const DigitRegister15& UEContext::getMsisdn() const
+        {
+                return msisdn_m;
+        }
+
 	
 	/******************************************************************************
 	* sets ueState
@@ -244,10 +219,11 @@ namespace mme
 	/******************************************************************************
 	* returns ueState
 	******************************************************************************/	
-	UE_State_e UEContext::getUeState() const
-	{
-		return ueState_m;
-	}
+        UE_State_e UEContext::getUeState() const
+        {
+                return ueState_m;
+        }
+
 	
 	/******************************************************************************
 	* sets tai
@@ -260,10 +236,11 @@ namespace mme
 	/******************************************************************************
 	* returns tai
 	******************************************************************************/	
-	const Tai& UEContext::getTai() const
-	{
-		return tai_m;
-	}
+        const Tai& UEContext::getTai() const
+        {
+                return tai_m;
+        }
+
 	
 	/******************************************************************************
 	* sets utranCgi
@@ -276,10 +253,11 @@ namespace mme
 	/******************************************************************************
 	* returns utranCgi
 	******************************************************************************/	
-	const Cgi& UEContext::getUtranCgi() const
-	{
-		return utranCgi_m;
-	}
+        const Cgi& UEContext::getUtranCgi() const
+        {
+                return utranCgi_m;
+        }
+
 	
 	/******************************************************************************
 	* sets msNetCapab
@@ -292,10 +270,11 @@ namespace mme
 	/******************************************************************************
 	* returns msNetCapab
 	******************************************************************************/	
-	const Ms_net_capab& UEContext::getMsNetCapab() const
-	{
-		return msNetCapab_m;
-	}
+        const Ms_net_capab& UEContext::getMsNetCapab() const
+        {
+                return msNetCapab_m;
+        }
+
 	
 	/******************************************************************************
 	* sets ueNetCapab
@@ -308,15 +287,16 @@ namespace mme
 	/******************************************************************************
 	* returns ueNetCapab
 	******************************************************************************/	
-	const Ue_net_capab& UEContext::getUeNetCapab() const
-	{
-		return ueNetCapab_m;
-	}
+        const Ue_net_capab& UEContext::getUeNetCapab() const
+        {
+                return ueNetCapab_m;
+        }
+
 	
 	/******************************************************************************
 	* sets ueSecInfo
 	******************************************************************************/
-	void UEContext::setUeSecInfo( const Secinfo& ueSecInfo_i )
+	void UEContext::setUeSecInfo( Secinfo& ueSecInfo_i )
 	{
 		ueSecInfo_m = ueSecInfo_i;
 	}
@@ -324,10 +304,11 @@ namespace mme
 	/******************************************************************************
 	* returns ueSecInfo
 	******************************************************************************/	
-	const Secinfo& UEContext::getUeSecInfo() const
-	{
-		return ueSecInfo_m;
-	}
+        Secinfo& UEContext::getUeSecInfo()
+        {
+                return ueSecInfo_m;
+        }   
+
 	
 	/******************************************************************************
 	* sets ambr
@@ -340,10 +321,11 @@ namespace mme
 	/******************************************************************************
 	* returns ambr
 	******************************************************************************/	
-	const Ambr& UEContext::getAmbr() const
-	{
-		return ambr_m;
-	}
+        const Ambr& UEContext::getAmbr() const
+        {
+                return ambr_m;
+        }
+
 	
 	/******************************************************************************
 	* sets aiaSecInfo
@@ -356,10 +338,11 @@ namespace mme
 	/******************************************************************************
 	* returns aiaSecInfo
 	******************************************************************************/	
-	const E_utran_sec_vector& UEContext::getAiaSecInfo() const
-	{
-		return aiaSecInfo_m;
-	}
+        const E_utran_sec_vector& UEContext::getAiaSecInfo() const
+        {
+                return aiaSecInfo_m;
+        }
+
 	
 	/******************************************************************************
 	* sets mTmsi
@@ -372,10 +355,11 @@ namespace mme
 	/******************************************************************************
 	* returns mTmsi
 	******************************************************************************/	
-	uint32_t UEContext::getMTmsi() const
-	{
-		return mTmsi_m;
-	}
+        uint32_t UEContext::getMTmsi() const
+        {
+                return mTmsi_m;
+        }
+
 	
 	/******************************************************************************
 	* sets subscribedApn
@@ -388,10 +372,11 @@ namespace mme
 	/******************************************************************************
 	* returns subscribedApn
 	******************************************************************************/	
-	const Apn_name& UEContext::getSubscribedApn() const
-	{
-		return subscribedApn_m;
-	}
+        const Apn_name& UEContext::getSubscribedApn() const
+        {
+                return subscribedApn_m;
+        }
+
 	
 	/******************************************************************************
 	* sets pdnAddr
@@ -404,10 +389,11 @@ namespace mme
 	/******************************************************************************
 	* returns pdnAddr
 	******************************************************************************/	
-	const Paa& UEContext::getPdnAddr() const
-	{
-		return pdnAddr_m;
-	}
+        const Paa& UEContext::getPdnAddr() const
+        {
+                return pdnAddr_m;
+        }
+
 	
 	/******************************************************************************
 	* sets MmContext
@@ -472,10 +458,11 @@ namespace mme
 	/******************************************************************************
 	* returns mmState
 	******************************************************************************/	
-	EmmState MmContext::getMmState() const
-	{
-		return mmState_m;
-	}
+        EmmState MmContext::getMmState() const
+        {
+                return mmState_m;
+        }
+
 	
 	/******************************************************************************
 	* sets ecmState
@@ -488,10 +475,11 @@ namespace mme
 	/******************************************************************************
 	* returns ecmState
 	******************************************************************************/	
-	EcmState MmContext::getEcmState() const
-	{
-		return ecmState_m;
-	}
+        EcmState MmContext::getEcmState() const
+        {
+                return ecmState_m;
+        }
+
 	
 	/******************************************************************************
 	*******************************************************************************
@@ -531,10 +519,11 @@ namespace mme
 	/******************************************************************************
 	* returns sessionId
 	******************************************************************************/	
-	uint8_t SessionContext::getSessionId() const
-	{
-		return sessionId_m;
-	}
+        uint8_t SessionContext::getSessionId() const
+        {
+                return sessionId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets s11SgwCtrlFteid
@@ -547,10 +536,11 @@ namespace mme
 	/******************************************************************************
 	* returns s11SgwCtrlFteid
 	******************************************************************************/	
-	const Fteid& SessionContext::getS11SgwCtrlFteid() const
-	{
-		return s11SgwCtrlFteid_m;
-	}
+        const Fteid& SessionContext::getS11SgwCtrlFteid() const
+        {
+                return s11SgwCtrlFteid_m;
+        }
+
 	
 	/******************************************************************************
 	* sets s5S8PgwCtrlFteid
@@ -563,10 +553,11 @@ namespace mme
 	/******************************************************************************
 	* returns s5S8PgwCtrlFteid
 	******************************************************************************/	
-	const Fteid& SessionContext::getS5S8PgwCtrlFteid() const
-	{
-		return s5S8PgwCtrlFteid_m;
-	}
+        const Fteid& SessionContext::getS5S8PgwCtrlFteid() const
+        {
+                return s5S8PgwCtrlFteid_m;
+        }
+
 	
 	/******************************************************************************
 	* sets pdnAddr
@@ -579,10 +570,11 @@ namespace mme
 	/******************************************************************************
 	* returns pdnAddr
 	******************************************************************************/	
-	const Paa& SessionContext::getPdnAddr() const
-	{
-		return pdnAddr_m;
-	}
+        const Paa& SessionContext::getPdnAddr() const
+        {
+                return pdnAddr_m;
+        }
+
 	
 	/******************************************************************************
 	* sets accessPtName
@@ -595,10 +587,11 @@ namespace mme
 	/******************************************************************************
 	* returns accessPtName
 	******************************************************************************/	
-	const Apn_name& SessionContext::getAccessPtName() const
-	{
-		return accessPtName_m;
-	}
+        const Apn_name& SessionContext::getAccessPtName() const
+        {
+                return accessPtName_m;
+        }
+
 	
 	/******************************************************************************
 	* sets apnConfigProfileCtxId
@@ -611,10 +604,11 @@ namespace mme
 	/******************************************************************************
 	* returns apnConfigProfileCtxId
 	******************************************************************************/	
-	uint32_t SessionContext::getApnConfigProfileCtxId() const
-	{
-		return apnConfigProfileCtxId_m;
-	}
+        uint32_t SessionContext::getApnConfigProfileCtxId() const
+        {
+                return apnConfigProfileCtxId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets pti
@@ -627,10 +621,11 @@ namespace mme
 	/******************************************************************************
 	* returns pti
 	******************************************************************************/	
-	uint8_t SessionContext::getPti() const
-	{
-		return pti_m;
-	}
+        uint8_t SessionContext::getPti() const
+        {
+                return pti_m;
+        }
+
 	
 	/******************************************************************************
 	* sets BearerContext
@@ -682,10 +677,11 @@ namespace mme
 	/******************************************************************************
 	* returns s1uSgwUserFteid
 	******************************************************************************/	
-	const Fteid& BearerContext::getS1uSgwUserFteid() const
-	{
-		return s1uSgwUserFteid_m;
-	}
+        const Fteid& BearerContext::getS1uSgwUserFteid() const
+        {
+                return s1uSgwUserFteid_m;
+        }
+
 	
 	/******************************************************************************
 	* sets s5S8PgwUserFteid
@@ -698,10 +694,11 @@ namespace mme
 	/******************************************************************************
 	* returns s5S8PgwUserFteid
 	******************************************************************************/	
-	const Fteid& BearerContext::getS5S8PgwUserFteid() const
-	{
-		return s5S8PgwUserFteid_m;
-	}
+        const Fteid& BearerContext::getS5S8PgwUserFteid() const
+        {
+                return s5S8PgwUserFteid_m;
+        }
+
 	
 	/******************************************************************************
 	* sets s1uEnbUserFteid
@@ -714,10 +711,11 @@ namespace mme
 	/******************************************************************************
 	* returns s1uEnbUserFteid
 	******************************************************************************/	
-	const Fteid& BearerContext::getS1uEnbUserFteid() const
-	{
-		return s1uEnbUserFteid_m;
-	}
+        const Fteid& BearerContext::getS1uEnbUserFteid() const
+        {
+                return s1uEnbUserFteid_m;
+        }
+
 	
 	/******************************************************************************
 	* sets bearerId
@@ -730,10 +728,11 @@ namespace mme
 	/******************************************************************************
 	* returns bearerId
 	******************************************************************************/	
-	uint8_t BearerContext::getBearerId() const
-	{
-		return bearerId_m;
-	}
+        uint8_t BearerContext::getBearerId() const
+        {
+                return bearerId_m;
+        }
+
 	
 	/******************************************************************************
 	*******************************************************************************
@@ -772,10 +771,11 @@ namespace mme
 	/******************************************************************************
 	* returns ctxtType
 	******************************************************************************/	
-	ProcedureType MmeProcedureCtxt::getCtxtType() const
-	{
-		return ctxtType_m;
-	}
+        ProcedureType MmeProcedureCtxt::getCtxtType() const
+        {
+                return ctxtType_m;
+        }
+
 	
 	/******************************************************************************
 	* sets mmeErrorCause
@@ -788,10 +788,11 @@ namespace mme
 	/******************************************************************************
 	* returns mmeErrorCause
 	******************************************************************************/	
-	MmeErrorCause MmeProcedureCtxt::getMmeErrorCause() const
-	{
-		return mmeErrorCause_m;
-	}
+        MmeErrorCause MmeProcedureCtxt::getMmeErrorCause() const
+        {
+                return mmeErrorCause_m;
+        }
+
 	
 	/******************************************************************************
 	* sets s1apCause
@@ -804,10 +805,11 @@ namespace mme
 	/******************************************************************************
 	* returns s1apCause
 	******************************************************************************/	
-	const S1apCause& MmeProcedureCtxt::getS1apCause() const
-	{
-		return s1apCause_m;
-	}
+        const S1apCause& MmeProcedureCtxt::getS1apCause() const
+        {
+                return s1apCause_m;
+        }
+
 	
 	/******************************************************************************
 	* sets stateGuardTimerCtxt
@@ -820,10 +822,11 @@ namespace mme
 	/******************************************************************************
 	* returns stateGuardTimerCtxt
 	******************************************************************************/	
-	MmeUeTimerContext* MmeProcedureCtxt::getStateGuardTimerCtxt() const
-	{
-		return stateGuardTimerCtxt_m;
-	}
+        MmeUeTimerContext* MmeProcedureCtxt::getStateGuardTimerCtxt() const
+        {
+                return stateGuardTimerCtxt_m;
+        }
+
 	
 	/******************************************************************************
 	* sets authRespStatus
@@ -836,10 +839,11 @@ namespace mme
 	/******************************************************************************
 	* returns authRespStatus
 	******************************************************************************/	
-	int MmeProcedureCtxt::getAuthRespStatus() const
-	{
-		return authRespStatus_m;
-	}
+        int MmeProcedureCtxt::getAuthRespStatus() const
+        {
+                return authRespStatus_m;
+        }
+
 	
 	/******************************************************************************
 	* sets auts
@@ -852,10 +856,11 @@ namespace mme
 	/******************************************************************************
 	* returns auts
 	******************************************************************************/	
-	const Auts& MmeProcedureCtxt::getAuts() const
-	{
-		return auts_m;
-	}
+        const Auts& MmeProcedureCtxt::getAuts() const
+        {
+                return auts_m;
+        }
+
 	
 	/******************************************************************************
 	*******************************************************************************
@@ -895,10 +900,11 @@ namespace mme
 	/******************************************************************************
 	* returns esmInfoTxRequired
 	******************************************************************************/	
-	bool MmeAttachProcedureCtxt::getEsmInfoTxRequired() const
-	{
-		return esmInfoTxRequired_m;
-	}
+        bool MmeAttachProcedureCtxt::getEsmInfoTxRequired() const
+        {
+                return esmInfoTxRequired_m;
+        }
+
 	
 	/******************************************************************************
 	* sets attachType
@@ -911,10 +917,11 @@ namespace mme
 	/******************************************************************************
 	* returns attachType
 	******************************************************************************/	
-	AttachType MmeAttachProcedureCtxt::getAttachType() const
-	{
-		return attachType_m;
-	}
+        AttachType MmeAttachProcedureCtxt::getAttachType() const
+        {
+                return attachType_m;
+        }
+
 	
 	/******************************************************************************
 	* sets pcoOptions
@@ -922,16 +929,17 @@ namespace mme
 	void MmeAttachProcedureCtxt::setPcoOptions( const uint8_t* pcoOptions_i,uint16_t len )
 	{
 		pcoOptionsLen_m=len;
-		memcpy(pcoOptions_m, pcoOptions_i, pcoOptionsLen_m);
+		memcpy(pcoOptions_m, pcoOptions_i, (pcoOptionsLen_m * sizeof(uint8_t)));
 	}
 	
 	/******************************************************************************
 	* returns pcoOptions
 	******************************************************************************/	
-	const uint8_t* MmeAttachProcedureCtxt::getPcoOptions() const
-	{
-		return pcoOptions_m;
-	}
+        const uint8_t* MmeAttachProcedureCtxt::getPcoOptions() const
+        {
+                return pcoOptions_m;
+        }
+
 	/******************************************************************************
 	* returns pcoOptionsLen
 	******************************************************************************/	
@@ -951,10 +959,11 @@ namespace mme
 	/******************************************************************************
 	* returns pti
 	******************************************************************************/	
-	uint8_t MmeAttachProcedureCtxt::getPti() const
-	{
-		return pti_m;
-	}
+        uint8_t MmeAttachProcedureCtxt::getPti() const
+        {
+                return pti_m;
+        }
+
 	
 	/******************************************************************************
 	* sets requestedApn
@@ -967,10 +976,11 @@ namespace mme
 	/******************************************************************************
 	* returns requestedApn
 	******************************************************************************/	
-	const Apn_name& MmeAttachProcedureCtxt::getRequestedApn() const
-	{
-		return requestedApn_m;
-	}
+        const Apn_name& MmeAttachProcedureCtxt::getRequestedApn() const
+        {
+                return requestedApn_m;
+        }
+
 	
 	/******************************************************************************
 	*******************************************************************************
@@ -983,7 +993,9 @@ namespace mme
 	******************************************************************************/
 	MmeDetachProcedureCtxt::MmeDetachProcedureCtxt():           
             detachType_m(invalidDetachType_c),
-            cancellationType_m(INVALID_TYPE)
+            cancellationType_m(INVALID_TYPE),
+            nasDetachType_m(0),
+            detachCause_m(0)
 	{	
 	}
 	
@@ -1005,10 +1017,11 @@ namespace mme
 	/******************************************************************************
 	* returns detachType
 	******************************************************************************/	
-	DetachType MmeDetachProcedureCtxt::getDetachType() const
-	{
-		return detachType_m;
-	}
+        DetachType MmeDetachProcedureCtxt::getDetachType() const
+        {
+                return detachType_m;
+        }
+
 	
 	/******************************************************************************
 	* sets cancellationType
@@ -1021,10 +1034,45 @@ namespace mme
 	/******************************************************************************
 	* returns cancellationType
 	******************************************************************************/	
-	CancellationType MmeDetachProcedureCtxt::getCancellationType() const
+        CancellationType MmeDetachProcedureCtxt::getCancellationType() const
+        {
+                return cancellationType_m;
+        }
+
+	
+	/******************************************************************************
+	* sets nasDetachType
+	******************************************************************************/
+	void MmeDetachProcedureCtxt::setNasDetachType( uint32_t nasDetachType_i )
 	{
-		return cancellationType_m;
+		nasDetachType_m = nasDetachType_i;
 	}
+	
+	/******************************************************************************
+	* returns nasDetachType
+	******************************************************************************/	
+        uint32_t MmeDetachProcedureCtxt::getNasDetachType() const
+        {
+                return nasDetachType_m;
+        }
+
+	
+	/******************************************************************************
+	* sets detachCause
+	******************************************************************************/
+	void MmeDetachProcedureCtxt::setDetachCause( uint32_t detachCause_i )
+	{
+		detachCause_m = detachCause_i;
+	}
+	
+	/******************************************************************************
+	* returns detachCause
+	******************************************************************************/	
+        uint32_t MmeDetachProcedureCtxt::getDetachCause() const
+        {
+                return detachCause_m;
+        }
+
 	
 	/******************************************************************************
 	*******************************************************************************
@@ -1036,7 +1084,8 @@ namespace mme
 	* Constructor
 	******************************************************************************/
 	MmeS1RelProcedureCtxt::MmeS1RelProcedureCtxt():           
-            s1ReleaseTrigger_m(noTrigger_c)
+            s1ReleaseTrigger_m(noTrigger_c),
+            s1apEnbUeId_m(0)
 	{	
 	}
 	
@@ -1058,10 +1107,28 @@ namespace mme
 	/******************************************************************************
 	* returns s1ReleaseTrigger
 	******************************************************************************/	
-	S1ReleaseTrigger MmeS1RelProcedureCtxt::getS1ReleaseTrigger() const
+        S1ReleaseTrigger MmeS1RelProcedureCtxt::getS1ReleaseTrigger() const
+        {
+                return s1ReleaseTrigger_m;
+        }
+
+	
+	/******************************************************************************
+	* sets s1apEnbUeId
+	******************************************************************************/
+	void MmeS1RelProcedureCtxt::setS1apEnbUeId( uint32_t s1apEnbUeId_i )
 	{
-		return s1ReleaseTrigger_m;
+		s1apEnbUeId_m = s1apEnbUeId_i;
 	}
+	
+	/******************************************************************************
+	* returns s1apEnbUeId
+	******************************************************************************/	
+        uint32_t MmeS1RelProcedureCtxt::getS1apEnbUeId() const
+        {
+                return s1apEnbUeId_m;
+        }
+
 	
 	/******************************************************************************
 	*******************************************************************************
@@ -1098,10 +1165,11 @@ namespace mme
 	/******************************************************************************
 	* returns ddnSeqNo
 	******************************************************************************/	
-	uint32_t MmeSvcReqProcedureCtxt::getDdnSeqNo() const
-	{
-		return ddnSeqNo_m;
-	}
+        uint32_t MmeSvcReqProcedureCtxt::getDdnSeqNo() const
+        {
+                return ddnSeqNo_m;
+        }
+
 	
 	/******************************************************************************
 	* sets pagingTrigger
@@ -1114,10 +1182,11 @@ namespace mme
 	/******************************************************************************
 	* returns pagingTrigger
 	******************************************************************************/	
-	PagingTrigger MmeSvcReqProcedureCtxt::getPagingTrigger() const
-	{
-		return pagingTrigger_m;
-	}
+        PagingTrigger MmeSvcReqProcedureCtxt::getPagingTrigger() const
+        {
+                return pagingTrigger_m;
+        }
+
 	
 	/******************************************************************************
 	* sets epsBearerId
@@ -1130,10 +1199,11 @@ namespace mme
 	/******************************************************************************
 	* returns epsBearerId
 	******************************************************************************/	
-	uint8_t MmeSvcReqProcedureCtxt::getEpsBearerId() const
-	{
-		return epsBearerId_m;
-	}
+        uint8_t MmeSvcReqProcedureCtxt::getEpsBearerId() const
+        {
+                return epsBearerId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets arp
@@ -1146,10 +1216,11 @@ namespace mme
 	/******************************************************************************
 	* returns arp
 	******************************************************************************/	
-	const Arp& MmeSvcReqProcedureCtxt::getArp() const
-	{
-		return arp_m;
-	}
+        const Arp& MmeSvcReqProcedureCtxt::getArp() const
+        {
+                return arp_m;
+        }
+
 	
 	/******************************************************************************
 	*******************************************************************************
@@ -1186,10 +1257,11 @@ namespace mme
 	/******************************************************************************
 	* returns s1apEnbUeId
 	******************************************************************************/	
-	uint32_t MmeTauProcedureCtxt::getS1apEnbUeId() const
-	{
-		return s1apEnbUeId_m;
-	}
+        uint32_t MmeTauProcedureCtxt::getS1apEnbUeId() const
+        {
+                return s1apEnbUeId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets tai
@@ -1202,10 +1274,11 @@ namespace mme
 	/******************************************************************************
 	* returns tai
 	******************************************************************************/	
-	const Tai& MmeTauProcedureCtxt::getTai() const
-	{
-		return tai_m;
-	}
+        const Tai& MmeTauProcedureCtxt::getTai() const
+        {
+                return tai_m;
+        }
+
 	
 	/******************************************************************************
 	* sets eUtranCgi
@@ -1218,10 +1291,11 @@ namespace mme
 	/******************************************************************************
 	* returns eUtranCgi
 	******************************************************************************/	
-	const Cgi& MmeTauProcedureCtxt::getEUtranCgi() const
-	{
-		return eUtranCgi_m;
-	}
+        const Cgi& MmeTauProcedureCtxt::getEUtranCgi() const
+        {
+                return eUtranCgi_m;
+        }
+
 	
 	/******************************************************************************
 	* sets enbFd
@@ -1234,10 +1308,11 @@ namespace mme
 	/******************************************************************************
 	* returns enbFd
 	******************************************************************************/	
-	uint32_t MmeTauProcedureCtxt::getEnbFd() const
-	{
-		return enbFd_m;
-	}
+        uint32_t MmeTauProcedureCtxt::getEnbFd() const
+        {
+                return enbFd_m;
+        }
+
 	
 	/******************************************************************************
 	*******************************************************************************
@@ -1281,10 +1356,11 @@ namespace mme
 	/******************************************************************************
 	* returns hoType
 	******************************************************************************/	
-	HoType S1HandoverProcedureContext::getHoType() const
-	{
-		return hoType_m;
-	}
+        HoType S1HandoverProcedureContext::getHoType() const
+        {
+                return hoType_m;
+        }
+
 	
 	/******************************************************************************
 	* sets targetEnbContextId
@@ -1297,10 +1373,11 @@ namespace mme
 	/******************************************************************************
 	* returns targetEnbContextId
 	******************************************************************************/	
-	uint32_t S1HandoverProcedureContext::getTargetEnbContextId() const
-	{
-		return targetEnbContextId_m;
-	}
+        uint32_t S1HandoverProcedureContext::getTargetEnbContextId() const
+        {
+                return targetEnbContextId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets targetS1apEnbUeId
@@ -1313,10 +1390,11 @@ namespace mme
 	/******************************************************************************
 	* returns targetS1apEnbUeId
 	******************************************************************************/	
-	uint32_t S1HandoverProcedureContext::getTargetS1apEnbUeId() const
-	{
-		return targetS1apEnbUeId_m;
-	}
+        uint32_t S1HandoverProcedureContext::getTargetS1apEnbUeId() const
+        {
+                return targetS1apEnbUeId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets targetTai
@@ -1329,10 +1407,11 @@ namespace mme
 	/******************************************************************************
 	* returns targetTai
 	******************************************************************************/	
-	const Tai& S1HandoverProcedureContext::getTargetTai() const
-	{
-		return targetTai_m;
-	}
+        const Tai& S1HandoverProcedureContext::getTargetTai() const
+        {
+                return targetTai_m;
+        }
+
 	
 	/******************************************************************************
 	* sets targetCgi
@@ -1345,10 +1424,11 @@ namespace mme
 	/******************************************************************************
 	* returns targetCgi
 	******************************************************************************/	
-	const Cgi& S1HandoverProcedureContext::getTargetCgi() const
-	{
-		return targetCgi_m;
-	}
+        const Cgi& S1HandoverProcedureContext::getTargetCgi() const
+        {
+                return targetCgi_m;
+        }
+
 	
 	/******************************************************************************
 	* sets srcToTargetTransContainer
@@ -1361,10 +1441,11 @@ namespace mme
 	/******************************************************************************
 	* returns srcToTargetTransContainer
 	******************************************************************************/	
-	const src_target_transparent_container& S1HandoverProcedureContext::getSrcToTargetTransContainer() const
-	{
-		return srcToTargetTransContainer_m;
-	}
+        const src_target_transparent_container& S1HandoverProcedureContext::getSrcToTargetTransContainer() const
+        {
+                return srcToTargetTransContainer_m;
+        }
+
 	
 	/******************************************************************************
 	* sets targetToSrcTransContainer
@@ -1377,10 +1458,11 @@ namespace mme
 	/******************************************************************************
 	* returns targetToSrcTransContainer
 	******************************************************************************/	
-	const src_target_transparent_container& S1HandoverProcedureContext::getTargetToSrcTransContainer() const
-	{
-		return targetToSrcTransContainer_m;
-	}
+        const src_target_transparent_container& S1HandoverProcedureContext::getTargetToSrcTransContainer() const
+        {
+                return targetToSrcTransContainer_m;
+        }
+
 	
 	/******************************************************************************
 	* sets erabAdmittedItem
@@ -1393,10 +1475,11 @@ namespace mme
 	/******************************************************************************
 	* returns erabAdmittedItem
 	******************************************************************************/	
-	const ERAB_admitted& S1HandoverProcedureContext::getErabAdmittedItem() const
-	{
-		return erabAdmittedItem_m;
-	}
+        const ERAB_admitted& S1HandoverProcedureContext::getErabAdmittedItem() const
+        {
+                return erabAdmittedItem_m;
+        }
+
 	
 	/******************************************************************************
 	* sets s1HoCause
@@ -1409,10 +1492,11 @@ namespace mme
 	/******************************************************************************
 	* returns s1HoCause
 	******************************************************************************/	
-	const S1apCause& S1HandoverProcedureContext::getS1HoCause() const
-	{
-		return s1HoCause_m;
-	}
+        const S1apCause& S1HandoverProcedureContext::getS1HoCause() const
+        {
+                return s1HoCause_m;
+        }
+
 	
 	/******************************************************************************
 	* sets srcEnbContextId
@@ -1425,10 +1509,11 @@ namespace mme
 	/******************************************************************************
 	* returns srcEnbContextId
 	******************************************************************************/	
-	uint32_t S1HandoverProcedureContext::getSrcEnbContextId() const
-	{
-		return srcEnbContextId_m;
-	}
+        uint32_t S1HandoverProcedureContext::getSrcEnbContextId() const
+        {
+                return srcEnbContextId_m;
+        }
+
 	
 	/******************************************************************************
 	* sets srcS1apEnbUeId
@@ -1441,9 +1526,86 @@ namespace mme
 	/******************************************************************************
 	* returns srcS1apEnbUeId
 	******************************************************************************/	
-	uint32_t S1HandoverProcedureContext::getSrcS1apEnbUeId() const
+        uint32_t S1HandoverProcedureContext::getSrcS1apEnbUeId() const
+        {
+                return srcS1apEnbUeId_m;
+        }
+
+	
+	/******************************************************************************
+	*******************************************************************************
+	*							MmeErabModIndProcedureCtxt
+	*******************************************************************************
+	******************************************************************************/
+	
+	/******************************************************************************
+	* Constructor
+	******************************************************************************/
+	MmeErabModIndProcedureCtxt::MmeErabModIndProcedureCtxt():           
+            erabToBeModifiedListLen_m(0),
+            erabModifiedListLen_m(0)
 	{
-		return srcS1apEnbUeId_m;
+		memset(erabToBeModifiedList_m,0,sizeof(erabToBeModifiedList_m));
+
+		memset(erabModifiedList_m,0,sizeof(erabModifiedList_m));
+	
+	}
+	
+	/******************************************************************************
+	* Destructor
+	******************************************************************************/
+	MmeErabModIndProcedureCtxt::~MmeErabModIndProcedureCtxt()
+	{
+	}	
+	
+	/******************************************************************************
+	* sets erabToBeModifiedList
+	******************************************************************************/
+	void MmeErabModIndProcedureCtxt::setErabToBeModifiedList( const erab_to_be_modified_item* erabToBeModifiedList_i,uint16_t len )
+	{
+		erabToBeModifiedListLen_m=len;
+		memcpy(erabToBeModifiedList_m, erabToBeModifiedList_i, (erabToBeModifiedListLen_m * sizeof(erab_to_be_modified_item)));
+	}
+	
+	/******************************************************************************
+	* returns erabToBeModifiedList
+	******************************************************************************/	
+        const erab_to_be_modified_item* MmeErabModIndProcedureCtxt::getErabToBeModifiedList() const
+        {
+                return erabToBeModifiedList_m;
+        }
+
+	/******************************************************************************
+	* returns erabToBeModifiedListLen
+	******************************************************************************/	
+	uint16_t MmeErabModIndProcedureCtxt::getErabToBeModifiedListLen() const
+	{
+		return erabToBeModifiedListLen_m;
+	}
+	
+	/******************************************************************************
+	* sets erabModifiedList
+	******************************************************************************/
+	void MmeErabModIndProcedureCtxt::setErabModifiedList( const uint8_t* erabModifiedList_i,uint16_t len )
+	{
+		erabModifiedListLen_m=len;
+		memcpy(erabModifiedList_m, erabModifiedList_i, (erabModifiedListLen_m * sizeof(uint8_t)));
+	}
+	
+	/******************************************************************************
+	* returns erabModifiedList
+	******************************************************************************/	
+        const uint8_t* MmeErabModIndProcedureCtxt::getErabModifiedList() const
+        {
+                return erabModifiedList_m;
+        }
+
+	/******************************************************************************
+	* returns erabModifiedListLen
+	******************************************************************************/	
+	uint16_t MmeErabModIndProcedureCtxt::getErabModifiedListLen() const
+	{
+		return erabModifiedListLen_m;
 	}
 	
 } // mme

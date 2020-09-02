@@ -1,20 +1,10 @@
 /*
- *
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  * Copyright (c) 2019-Present, Infosys Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -72,6 +62,10 @@ int s1ap_mme_encode_initiating(
 	        log_msg(LOG_INFO, "Service Reject encode\n");
 	        return s1ap_mme_encode_service_rej(
 		          message_p, buffer, length); 
+	case S1AP_TAU_REJ:
+		log_msg(LOG_INFO, "TAU Reject encode\n");
+		return s1ap_mme_encode_tau_rej(
+                          message_p, buffer, length);
         default:
             log_msg(
                   LOG_WARNING,
@@ -193,6 +187,89 @@ int s1ap_mme_encode_service_rej(
     return enc_ret; 
 }
 
+int s1ap_mme_encode_tau_rej(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+        S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+    InitiatingMessage_t *initiating_msg = NULL;
+        S1AP_PDU_t                             *pdu_p = &pdu;
+        int                                     enc_ret = -1;
+        memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+
+    log_msg(LOG_DEBUG, "Encode TAU Rej");
+    pdu.present = S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = calloc(sizeof(InitiatingMessage_t), sizeof(uint8_t));
+
+    initiating_msg = pdu.choice.initiatingMessage;
+    initiating_msg->procedureCode = ProcedureCode_id_downlinkNASTransport;
+    initiating_msg->criticality = 1;
+    initiating_msg->value.present = InitiatingMessage__value_PR_DownlinkNASTransport;
+
+    DownlinkNASTransport_IEs_t val[3];
+    memset(val, 0, (3*(sizeof(DownlinkNASTransport_IEs_t))));
+    val[0].id = ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    val[0].criticality = 0;
+    val[0].value.present = DownlinkNASTransport_IEs__value_PR_MME_UE_S1AP_ID;
+    val[0].value.choice.MME_UE_S1AP_ID = s1apPDU->mme_s1ap_ue_id;
+    log_msg(LOG_DEBUG,"MME_UE_S1AP_ID : %d",s1apPDU->mme_s1ap_ue_id);
+
+    val[1].id = ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    val[1].criticality = 0;
+    val[1].value.present = DownlinkNASTransport_IEs__value_PR_ENB_UE_S1AP_ID;
+    val[1].value.choice.ENB_UE_S1AP_ID = s1apPDU->enb_s1ap_ue_id;
+    log_msg(LOG_DEBUG, "ENB_UE_S1AP_ID : %d",s1apPDU->enb_s1ap_ue_id);
+
+    val[2].id = ProtocolIE_ID_id_NAS_PDU;
+    val[2].criticality = 0;
+    val[2].value.present = DownlinkNASTransport_IEs__value_PR_NAS_PDU;
+
+    struct Buffer g_nas_buffer;
+    g_nas_buffer.pos = 0;
+    unsigned char headertype = 0;
+    unsigned char proto_disc = EPSMobilityManagementMessages;
+    unsigned char message_type = TauReject;
+    
+    uint8_t value = (headertype << 4) | proto_disc;
+    buffer_copy(&g_nas_buffer, &value, sizeof(value));
+    
+    buffer_copy(&g_nas_buffer, &message_type, sizeof(message_type));
+
+    value = s1apPDU->emm_cause; // UE identity can not be derived by the network
+    buffer_copy(&g_nas_buffer, &value, sizeof(value));
+
+    val[2].value.choice.NAS_PDU.size = g_nas_buffer.pos;
+    val[2].value.choice.NAS_PDU.buf = calloc(g_nas_buffer.pos, sizeof(uint8_t));
+
+    if(val[2].value.choice.NAS_PDU.buf != NULL)
+    {
+        memcpy(val[2].value.choice.NAS_PDU.buf, g_nas_buffer.buf,
+                val[2].value.choice.NAS_PDU.size);
+    }
+    log_msg(LOG_INFO,"Add values to list.\n");
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.DownlinkNASTransport.protocolIEs.list, &val[0]);
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.DownlinkNASTransport.protocolIEs.list, &val[1]);
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.DownlinkNASTransport.protocolIEs.list, &val[2]);
+
+    if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0)
+    {
+        log_msg(LOG_ERROR, "Encoding of TAU Rej failed\n");
+        return -1;
+    }
+
+    log_msg(LOG_INFO,"free allocated msgs");
+    if(val[2].value.choice.NAS_PDU.buf)
+    {
+        free(val[2].value.choice.NAS_PDU.buf);
+    }
+
+    free(pdu.choice.initiatingMessage);
+
+    *length = enc_ret;
+    return enc_ret;
+}
+
 int s1ap_mme_encode_attach_rej(
   struct s1ap_common_req_Q_msg *s1apPDU,
   uint8_t **buffer,
@@ -245,7 +322,7 @@ int s1ap_mme_encode_attach_rej(
 
 	buffer_copy(&g_nas_buffer, &message_type, sizeof(message_type));
 
-    value = 0x09; // UE identity can not be derived by the network
+    value = s1apPDU->emm_cause; // UE identity can not be derived by the network
 	buffer_copy(&g_nas_buffer, &value, sizeof(value));
 
     val[2].value.choice.NAS_PDU.size = g_nas_buffer.pos;
@@ -589,8 +666,8 @@ int s1ap_mme_encode_paging_request(
     
     pagingId.choice.s_TMSI->m_TMSI.buf = calloc(sizeof(uint32_t), sizeof(uint8_t));
 
-    uint32_t ue_idx = htonl(s1apPDU->ue_idx);
-    memcpy(pagingId.choice.s_TMSI->m_TMSI.buf, &ue_idx, sizeof(uint32_t));
+    uint32_t m_tmsi = htonl(s1apPDU->m_tmsi);
+    memcpy(pagingId.choice.s_TMSI->m_TMSI.buf, &m_tmsi, sizeof(uint32_t));
     pagingId.choice.s_TMSI->m_TMSI.size = sizeof(uint32_t);
     memcpy(&val[1].value.choice.UEPagingID, &pagingId, sizeof(UEPagingID_t));
 
@@ -617,6 +694,25 @@ int s1ap_mme_encode_paging_request(
     log_msg(LOG_DEBUG,"TAI List - Encode PLMN ID\n");
     tai_item.value.choice.TAIItem.tAI.pLMNidentity.size = 3;
     tai_item.value.choice.TAIItem.tAI.pLMNidentity.buf = calloc(3, sizeof(uint8_t));
+
+    // plmnId stored in ue info is for s6a/s11/nas interfaces.
+    // For s1ap interface, we need to encode the plmn from 216354 to 214365.
+    {
+          unsigned char plmn_byte2 = s1apPDU->tai.plmn_id.idx[1]; //63
+          unsigned char plmn_byte3 = s1apPDU->tai.plmn_id.idx[2]; //54
+          unsigned char mnc3 = plmn_byte2 >> 4; // mnc3
+          unsigned char mnc2 = plmn_byte3 >> 4; // mnc2
+          unsigned char mnc1 = plmn_byte3 & 0xf; // mnc1
+          unsigned char mcc3 = plmn_byte2 & 0xf; // mcc3
+          // First byte we are not changing         mcc2 mcc1
+          if(mnc3 != 0x0F)
+	  { 
+	      plmn_byte2 = (mnc1 << 4) | mcc3; // 2nd byte on S1AP - <mnc1 mcc3>
+              plmn_byte3 = (mnc3 << 4) | mnc2; // 3rd byte on S1AP - <mnc3 mnc2>
+              s1apPDU->tai.plmn_id.idx[1] = plmn_byte2;
+              s1apPDU->tai.plmn_id.idx[2] = plmn_byte3;
+	  }
+    }
     memcpy(tai_item.value.choice.TAIItem.tAI.pLMNidentity.buf, &s1apPDU->tai.plmn_id.idx, 3);
 
     log_msg(LOG_DEBUG,"TAI List - Encode TAC\n");
@@ -793,7 +889,6 @@ int s1ap_mme_encode_s1_setup_response(
     MME_Group_ID_t group_id;
     memset(&group_id, 0, sizeof(MME_Group_ID_t));
 
-    log_msg(LOG_DEBUG, "group id %d\n", s1apPDU->mme_group_id);
     group_id.size = 2;
     group_id.buf = calloc(2, sizeof(uint8_t));
     group_id.size = copyU16(group_id.buf, s1apPDU->mme_group_id);
@@ -811,7 +906,6 @@ int s1ap_mme_encode_s1_setup_response(
     ASN_SEQUENCE_ADD(&gummei_item.servedMMECs.list, &mmecode);
     ASN_SEQUENCE_ADD(&val[0].value.choice.ServedGUMMEIs.list, &gummei_item);
 
-    log_msg(LOG_INFO,"Add values to list.\n");
     ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[2]);
     ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[0]);
     ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[1]);
@@ -822,7 +916,6 @@ int s1ap_mme_encode_s1_setup_response(
         return -1;
     }
 
-    log_msg(LOG_INFO,"free sucessful outcome  msg");
     free(pdu.choice.successfulOutcome);
 
     *length = enc_ret;
@@ -1380,6 +1473,80 @@ int s1ap_mme_encode_handover_cancel_ack(
     if ((enc_ret = aper_encode_to_new_buffer(&asn_DEF_S1AP_PDU, 0, &pdu,
             (void**) buffer)) < 0) {
         log_msg(LOG_ERROR, "Encoding of Handover Cancel Acknowlegde failed\n");
+        return -1;
+    }
+
+    free(pdu.choice.successfulOutcome);
+
+    *length = enc_ret;
+    return enc_ret;
+}
+
+int s1ap_mme_encode_erab_mod_confirmation(
+  struct erab_mod_confirm *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+    S1AP_PDU_t pdu = { (S1AP_PDU_PR_NOTHING) };
+    SuccessfulOutcome_t *successfulOutcome_msg = NULL;
+    S1AP_PDU_t *pdu_p = &pdu;
+    int enc_ret = -1;
+    memset((void*) pdu_p, 0, sizeof(S1AP_PDU_t));
+
+    pdu.present = S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = calloc(sizeof(SuccessfulOutcome_t), sizeof(uint8_t));
+
+    successfulOutcome_msg = pdu.choice.successfulOutcome;
+    successfulOutcome_msg->procedureCode = ProcedureCode_id_E_RABModificationIndication;
+    successfulOutcome_msg->criticality = 0;
+    successfulOutcome_msg->value.present = SuccessfulOutcome__value_PR_E_RABModificationConfirm;
+
+    E_RABModificationConfirmIEs_t val[3];
+    memset(val, 0, 3 * (sizeof(E_RABModificationConfirmIEs_t)));
+
+    val[0].id = ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    val[0].criticality = 0;
+    val[0].value.present = E_RABModificationConfirmIEs__value_PR_MME_UE_S1AP_ID;
+    val[0].value.choice.MME_UE_S1AP_ID = s1apPDU->mme_s1ap_ue_id;
+
+    val[1].id = ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    val[1].criticality = 0;
+    val[1].value.present = E_RABModificationConfirmIEs__value_PR_ENB_UE_S1AP_ID;
+    val[1].value.choice.ENB_UE_S1AP_ID = s1apPDU->enb_s1ap_ue_id;
+
+    val[2].id = ProtocolIE_ID_id_E_RABModifyListBearerModConf;
+    val[2].criticality = 0;
+    val[2].value.present = E_RABModificationConfirmIEs__value_PR_E_RABModifyListBearerModConf;
+
+    E_RABModifyItemBearerModConfIEs_t erab_modified_item_ies;
+    memset(&erab_modified_item_ies, 0, sizeof(E_RABModifyItemBearerModConfIEs_t));
+
+    E_RABModifyItemBearerModConf_t *erab_modified_item =
+            &(erab_modified_item_ies.value.choice.E_RABModifyItemBearerModConf);
+
+    erab_modified_item_ies.id = ProtocolIE_ID_id_E_RABModifyItemBearerModConf;
+    erab_modified_item_ies.criticality = 0;
+    erab_modified_item_ies.value.present = E_RABModifyItemBearerModConfIEs__value_PR_E_RABModifyItemBearerModConf;
+
+    erab_modified_item->e_RAB_ID = s1apPDU->erab_mod_list.erab_id[0];
+
+    ASN_SEQUENCE_ADD(
+            &(val[2].value.choice.E_RABModifyListBearerModConf.list),
+            &erab_modified_item_ies);
+
+    ASN_SEQUENCE_ADD(
+            &successfulOutcome_msg->value.choice.E_RABModificationConfirm.protocolIEs.list,
+            &val[0]);
+    ASN_SEQUENCE_ADD(
+            &successfulOutcome_msg->value.choice.E_RABModificationConfirm.protocolIEs.list,
+            &val[1]);
+    ASN_SEQUENCE_ADD(
+            &successfulOutcome_msg->value.choice.E_RABModificationConfirm.protocolIEs.list,
+            &val[2]);
+
+    if ((enc_ret = aper_encode_to_new_buffer(&asn_DEF_S1AP_PDU, 0, &pdu,
+            (void**) buffer)) < 0) {
+        log_msg(LOG_ERROR, "Encoding of ERAB Modification Confirmation failed\n");
         return -1;
     }
 

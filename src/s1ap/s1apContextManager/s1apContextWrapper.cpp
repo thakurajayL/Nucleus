@@ -48,6 +48,40 @@ uint32_t findControlBlockWithEnbId_cpp(uint32_t enbId)
 
 }
 
+bool getControlBlockDetailsEnbFd_cpp(uint32_t enbFd, struct EnbStruct *enbStructCtx)
+{
+    int cbIndex = mme::S1apDataGroupManager::Instance()->findCBWithenbFd(enbFd);
+
+    if (cbIndex <= 0)
+    {
+        log_msg(LOG_ERROR, "Failed to find control block with enbFd :%d.\n",enbFd);
+        return false; 
+    }
+
+    SM::ControlBlock *cb = NULL;
+    if (cbIndex > 0)
+    {
+        cb = mme::S1apDataGroupManager::Instance()->findControlBlock(cbIndex);
+        if(NULL == cb)
+        {
+            log_msg(LOG_ERROR,"Control block not found for cb Index %d.\n", cbIndex);
+            return false;
+        }
+
+        EnbContext* enbCtxt_p = static_cast <EnbContext *>(cb->getPermDataBlock());
+        enbStructCtx->tai_m.tac = enbCtxt_p->getTai().tac; 
+        strcpy(enbStructCtx->eNbName, enbCtxt_p->getEnbname());
+        return true;
+    }
+    else
+    {
+        log_msg(LOG_ERROR, "Failed to find control block with cbIndex :%d.\n",cbIndex);
+        return true;
+    }
+
+
+}
+
 uint32_t findControlBlockWithEnbFd_cpp(uint32_t enbFd)
 {
     int cbIndex = mme::S1apDataGroupManager::Instance()->findCBWithenbFd(enbFd);
@@ -87,7 +121,7 @@ uint32_t getEnbFdWithCbIndex_cpp(uint32_t cbIndex)
 
 }
 
-uint32_t setValuesForEnbCtx_cpp(uint32_t cbIndex, EnbStruct* enbCtx)
+uint32_t setValuesForEnbCtx_cpp(uint32_t cbIndex, EnbStruct* enbCtx, bool update)
 {
     SM::ControlBlock *cb = NULL;
     if (cbIndex > 0)
@@ -100,18 +134,35 @@ uint32_t setValuesForEnbCtx_cpp(uint32_t cbIndex, EnbStruct* enbCtx)
         }
 
         EnbContext* enbCbCtx = static_cast <EnbContext *>(cb->getPermDataBlock());
-        mme::S1apDataGroupManager::Instance()->deleteenbIdkey(
-                                                    enbCbCtx->getEnbId());
-        mme::S1apDataGroupManager::Instance()->deleteenbFdkey(
-                                                    enbCbCtx->getEnbFd());
- 
-        enbCbCtx->setEnbFd(enbCtx->enbFd_m);
-        enbCbCtx->setEnbId(enbCtx->enbId_m);
-        enbCbCtx->setS1apEnbUeId(enbCtx->s1apEnbUeId_m);
-        mme::S1apDataGroupManager::Instance()->addenbIdkey(
-                                        enbCtx->enbId_m, cbIndex);
-        mme::S1apDataGroupManager::Instance()->addenbFdkey(
-                                        enbCtx->enbFd_m, cbIndex);
+        if(enbCbCtx != NULL)
+        {
+            if(update && (enbCbCtx->getTai().tac != enbCtx->tai_m.tac))
+            {
+                log_msg(LOG_ERROR,"Different Enbs accessing same context tacNew : %d, tacOld : %d.\n", enbCbCtx->getTai().tac, enbCtx->tai_m.tac);
+                return INVALID_CB_INDEX;
+            }
+            else {
+                mme::S1apDataGroupManager::Instance()->deleteenbIdkey(
+                                                        enbCbCtx->getEnbId());
+                mme::S1apDataGroupManager::Instance()->deleteenbFdkey(
+                                                        enbCbCtx->getEnbFd());
+                enbCbCtx->setEnbFd(enbCtx->enbFd_m);
+                enbCbCtx->setEnbId(enbCtx->enbId_m);
+                enbCbCtx->setS1apEnbUeId(enbCtx->s1apEnbUeId_m);
+                enbCbCtx->setTai(enbCtx->tai_m);
+                enbCbCtx->setEnbname(enbCtx->eNbName, strlen(enbCtx->eNbName));
+                log_msg(LOG_ERROR,"Different Enbs accessing same context tacNew : %d, tacOld : %d name = %s .\n", enbCbCtx->getTai().tac, enbCtx->tai_m.tac, enbCtx->eNbName);
+                mme::S1apDataGroupManager::Instance()->addenbIdkey(
+                                              enbCtx->enbId_m, cbIndex);
+                mme::S1apDataGroupManager::Instance()->addenbFdkey(
+                                              enbCtx->enbFd_m, cbIndex);
+            }
+        }
+        else
+        {
+            log_msg(LOG_ERROR,"No Valid Enb Ctx in Control Block.");
+            return INVALID_CB_INDEX;
+        }
     }
     else
     {

@@ -28,7 +28,7 @@ using namespace SM;
 /******************************************************************************
 * Constructor
 ******************************************************************************/
-DetachWfPurgeResp::DetachWfPurgeResp():State(detach_wf_purge_resp)
+DetachWfPurgeResp::DetachWfPurgeResp():State(detach_wf_purge_resp, defaultStateGuardTimerDuration_c)
 {
         stateEntryAction = &MmeStatesUtils::on_state_entry;
         stateExitAction = &MmeStatesUtils::on_state_exit;
@@ -61,5 +61,10 @@ void DetachWfPurgeResp::initialize()
                 actionTable.addAction(&ActionHandlers::process_pur_resp);
                 actionTable.addAction(&ActionHandlers::detach_accept_to_ue);
                 eventToActionsMap.insert(pair<uint16_t, ActionTable>(PURGE_RESP_FROM_HSS, actionTable));
+        }
+        {
+                ActionTable actionTable;
+                actionTable.addAction(&ActionHandlers::detach_accept_to_ue);
+                eventToActionsMap.insert(pair<uint16_t, ActionTable>(STATE_GUARD_TIMEOUT, actionTable));
         }
 }
