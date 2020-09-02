@@ -66,6 +66,8 @@ extern int pid;
 extern void
 handle_mmeapp_message(void * data);
 
+extern inject_msg();
+
 #define MAX_ENB     32
 #define BUFFER_LEN  4096
 #define AES_128_KEY_SIZE 16
@@ -651,6 +653,7 @@ main(int argc, char **argv)
 
 	while (1) {
 		sleep(10);
+        // inject message inject_msg();
 	}
 
 	return SUCCESS;
